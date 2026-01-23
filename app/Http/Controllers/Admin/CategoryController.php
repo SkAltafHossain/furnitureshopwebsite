@@ -72,6 +72,15 @@ class CategoryController extends Controller
         return response()->json(['success' => 'Category updated successfully']);
     }
 
+    public function toggleStatus($id)
+    {
+        $category = Category::findOrFail($id);
+        $category->status = $category->status === 'active' ? 'inactive' : 'active';
+        $category->save();
+
+        return response()->json(['success' => 'Category status updated successfully']);
+    }
+
     public function destroy($id)
     {
         $category = Category::findOrFail($id);

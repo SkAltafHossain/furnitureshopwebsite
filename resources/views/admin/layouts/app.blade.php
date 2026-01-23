@@ -92,6 +92,26 @@
             font-size: 1.5rem;
             color: #667eea;
         }
+        
+        /* Big size toggle switches */
+        .form-check-input {
+            width: 3.5em !important;
+            height: 2em !important;
+            cursor: pointer;
+            background-color: #dc3545; /* Red for OFF */
+            border-color: #dc3545;
+            transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+        }
+        
+        .form-check-input:checked {
+            background-color: #28a745; /* Green for ON */
+            border-color: #28a745;
+        }
+        
+        .form-check .form-check-input {
+            float: none;
+            margin-left: 0;
+        }
     </style>
     
     @stack('styles')

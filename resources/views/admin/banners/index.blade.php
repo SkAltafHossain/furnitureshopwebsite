@@ -107,9 +107,14 @@ $(document).ready(function() {
             { 
                 data: 'status', 
                 name: 'status',
-                render: function(data) {
-                    var badgeClass = data === 'active' ? 'bg-success' : 'bg-danger';
-                    return '<span class="badge ' + badgeClass + '">' + data.toUpperCase() + '</span>';
+                render: function(data, type, row) {
+                    var checked = data === 'active' ? 'checked' : '';
+                    return `
+                        <div class="form-check form-switch">
+                            <input class="form-check-input status-toggle" type="checkbox" 
+                                   data-id="${row.id}" ${checked}>
+                        </div>
+                    `;
                 }
             },
             { 
@@ -183,27 +188,30 @@ $(document).ready(function() {
             });
     });
 
-    // Toggle status
-    $(document).on('click', '.toggle-status', function() {
+    // Toggle status with switch
+    $(document).on('change', '.status-toggle', function() {
         var id = $(this).data('id');
-        var btn = $(this);
+        var checkbox = $(this);
         
-        if (confirm('Are you sure you want to toggle the banner status?')) {
-            $.ajax({
-                url: '{{ route("admin.banners.toggle-status", ":id") }}'.replace(':id', id),
-                method: 'PATCH',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    table.ajax.reload();
-                    alert(response.success);
-                },
-                error: function() {
-                    alert('Error occurred while updating status.');
-                }
-            });
-        }
+        $.ajax({
+            url: '{{ route("admin.banners.toggle-status", ":id") }}'.replace(':id', id),
+            method: 'PATCH',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                table.ajax.reload();
+                // Show success message
+                var toast = '<div class="position-fixed top-0 end-0 p-3" style="z-index: 11"><div class="toast show" role="alert"><div class="toast-body">' + response.success + '</div></div></div>';
+                $('body').append(toast);
+                setTimeout(function() { $('.toast').parent().remove(); }, 3000);
+            },
+            error: function() {
+                // Revert checkbox on error
+                checkbox.prop('checked', !checkbox.prop('checked'));
+                alert('Error occurred while updating status.');
+            }
+        });
     });
 
     // Submit form

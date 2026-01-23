@@ -103,9 +103,14 @@ $(document).ready(function() {
             { 
                 data: 'status', 
                 name: 'status',
-                render: function(data) {
-                    var badgeClass = data === 'active' ? 'bg-success' : 'bg-danger';
-                    return '<span class="badge ' + badgeClass + '">' + data.toUpperCase() + '</span>';
+                render: function(data, type, row) {
+                    var checked = data === 'active' ? 'checked' : '';
+                    return `
+                        <div class="form-check form-switch">
+                            <input class="form-check-input category-status-toggle" type="checkbox" 
+                                   data-id="${row.id}" ${checked}>
+                        </div>
+                    `;
                 }
             },
             { 
@@ -176,6 +181,32 @@ $(document).ready(function() {
                 $('#category_image').prop('required', false);
                 $('#categoryModal').modal('show');
             });
+    });
+
+    // Toggle status with switch
+    $(document).on('change', '.category-status-toggle', function() {
+        var id = $(this).data('id');
+        var checkbox = $(this);
+        
+        $.ajax({
+            url: '{{ route("admin.categories.toggle-status", ":id") }}'.replace(':id', id),
+            method: 'PATCH',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                table.ajax.reload();
+                // Show success message
+                var toast = '<div class="position-fixed top-0 end-0 p-3" style="z-index: 11"><div class="toast show" role="alert"><div class="toast-body">' + response.success + '</div></div></div>';
+                $('body').append(toast);
+                setTimeout(function() { $('.toast').parent().remove(); }, 3000);
+            },
+            error: function() {
+                // Revert checkbox on error
+                checkbox.prop('checked', !checkbox.prop('checked'));
+                alert('Error occurred while updating status.');
+            }
+        });
     });
 
     // Delete category
