@@ -67,7 +67,7 @@
                             
                             <div class="mb-3">
                                 <label for="description" class="form-label">Description *</label>
-                                <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                                <textarea class="form-control" id="description" name="description" rows="15" required></textarea>
                             </div>
                         </div>
                         
@@ -129,8 +129,79 @@
 @endsection
 
 @push('scripts')
+<!-- CKEditor CDN -->
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
 $(document).ready(function() {
+    // Initialize CKEditor
+    let descriptionEditor;
+    
+    function initCKEditor() {
+        if (typeof ClassicEditor !== 'undefined') {
+            ClassicEditor
+                .create(document.querySelector('#description'), {
+                    height: '400px',
+                    toolbar: {
+                        items: [
+                            'heading', '|',
+                            'bold', 'italic', 'underline', 'strikethrough', '|',
+                            'bulletedList', 'numberedList', '|',
+                            'outdent', 'indent', '|',
+                            'link', 'blockquote', 'imageUpload', 'insertTable', '|',
+                            'undo', 'redo'
+                        ]
+                    },
+                    image: {
+                        toolbar: [
+                            'imageTextAlternative', 'imageStyle:full', 'imageStyle:side'
+                        ]
+                    },
+                    table: {
+                        contentToolbar: [
+                            'tableColumn', 'tableRow', 'mergeTableCells'
+                        ]
+                    }
+                })
+                .then(editor => {
+                    descriptionEditor = editor;
+                    
+                    // Set maximum height for the editor
+                    editor.editing.view.change(writer => {
+                        writer.setStyle('height', '400px', editor.editing.view.document.getRoot());
+                        writer.setStyle('max-height', '500px', editor.editing.view.document.getRoot());
+                        writer.setStyle('overflow-y', 'auto', editor.editing.view.document.getRoot());
+                    });
+                    
+                    editor.model.document.on('change:data', () => {
+                        // Update the hidden textarea if needed
+                        $('#description').val(editor.getData());
+                    });
+                })
+                .catch(error => {
+                    console.error('CKEditor initialization error:', error);
+                    // Fallback to regular textarea if CKEditor fails - ensure it's visible with 15 rows
+                    $('#description').show().css('visibility', 'visible');
+                });
+        }
+    }
+    
+    // Initialize CKEditor when modal is shown
+    $('#productModal').on('shown.bs.modal', function() {
+        if (!descriptionEditor) {
+            setTimeout(initCKEditor, 100); // Small delay to ensure modal is fully rendered
+        }
+    });
+    
+    // Destroy CKEditor when modal is hidden to avoid conflicts
+    $('#productModal').on('hidden.bs.modal', function() {
+        if (descriptionEditor) {
+            descriptionEditor.destroy().then(() => {
+                descriptionEditor = null;
+            }).catch(error => {
+                console.error('Error destroying CKEditor:', error);
+            });
+        }
+    });
     // Initialize DataTable
     var table = $('#productsTable').DataTable({
         processing: true,
@@ -261,7 +332,18 @@ $(document).ready(function() {
                 $('#productModalTitle').text('Edit Product');
                 $('#submitBtnText').text('Update Product');
                 $('#product_image').prop('required', false);
+                
+                // Show modal first, then set CKEditor content
                 $('#productModal').modal('show');
+                
+                // Set CKEditor content after modal is shown and editor is ready
+                $('#productModal').one('shown.bs.modal', function() {
+                    setTimeout(function() {
+                        if (descriptionEditor && data.description) {
+                            descriptionEditor.setData(data.description);
+                        }
+                    }, 200);
+                });
             });
     });
 
@@ -328,6 +410,11 @@ $(document).ready(function() {
     // Submit form
     $('#productForm').on('submit', function(e) {
         e.preventDefault();
+        
+        // Get CKEditor content before submitting
+        if (descriptionEditor) {
+            $('#description').val(descriptionEditor.getData());
+        }
         
         var formData = new FormData(this);
         var id = $('#product_id').val();
