@@ -150,17 +150,20 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" 
+                       href="{{ route('admin.orders.index') }}">
                         <i class="fas fa-shopping-cart"></i> Orders
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" 
+                       href="{{ route('admin.users.index') }}">
                         <i class="fas fa-users"></i> Users
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link {{ request()->routeIs('admin.static-pages.*') ? 'active' : '' }}" 
+                       href="{{ route('admin.static-pages.index') }}">
                         <i class="fas fa-file-alt"></i> Pages
                     </a>
                 </li>

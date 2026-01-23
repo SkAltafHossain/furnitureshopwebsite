@@ -40,6 +40,25 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/products/{id}', [App\Http\Controllers\Admin\ProductController::class, 'update'])->name('products.update');
         Route::patch('/products/{id}/toggle-status', [App\Http\Controllers\Admin\ProductController::class, 'toggleStatus'])->name('products.toggle-status');
         Route::delete('/products/{id}', [App\Http\Controllers\Admin\ProductController::class, 'destroy'])->name('products.destroy');
+
+        // Order Management
+        Route::get('/orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/data', [App\Http\Controllers\Admin\OrderController::class, 'getData'])->name('orders.data');
+        Route::get('/orders/{id}', [App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.show');
+        Route::patch('/orders/{id}/update-status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
+
+        // User Management
+        Route::get('/users', [App\Http\Controllers\Admin\UserManagementController::class, 'index'])->name('users.index');
+        Route::get('/users/data', [App\Http\Controllers\Admin\UserManagementController::class, 'getData'])->name('users.data');
+        Route::patch('/users/{id}/toggle-status', [App\Http\Controllers\Admin\UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::get('/users/{id}/order-history', [App\Http\Controllers\Admin\UserManagementController::class, 'showOrderHistory'])->name('users.order-history');
+
+        // Static Pages Management
+        Route::get('/static-pages', [App\Http\Controllers\Admin\StaticPageController::class, 'index'])->name('static-pages.index');
+        Route::get('/static-pages/data', [App\Http\Controllers\Admin\StaticPageController::class, 'getData'])->name('static-pages.data');
+        Route::get('/static-pages/{id}/edit', [App\Http\Controllers\Admin\StaticPageController::class, 'edit'])->name('static-pages.edit');
+        Route::put('/static-pages/{id}', [App\Http\Controllers\Admin\StaticPageController::class, 'update'])->name('static-pages.update');
+        Route::patch('/static-pages/{id}/toggle-status', [App\Http\Controllers\Admin\StaticPageController::class, 'toggleStatus'])->name('static-pages.toggle-status');
     });
 });
 
