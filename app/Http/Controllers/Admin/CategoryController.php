@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
@@ -78,7 +79,13 @@ class CategoryController extends Controller
         $category->status = $category->status === 'active' ? 'inactive' : 'active';
         $category->save();
 
-        return response()->json(['success' => 'Category status updated successfully']);
+        // If category is being deactivated, deactivate all its products
+        if ($category->status === 'inactive') {
+            Product::where('category_id', $id)->update(['status' => 'inactive']);
+        }
+
+        return response()->json(['success' => 'Category status updated successfully' . 
+            ($category->status === 'inactive' ? ' and all related products deactivated' : '')]);
     }
 
     public function destroy($id)

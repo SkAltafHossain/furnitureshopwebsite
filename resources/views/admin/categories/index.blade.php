@@ -195,11 +195,16 @@ $(document).ready(function() {
                 _token: '{{ csrf_token() }}'
             },
             success: function(response) {
+                // Refresh both categories and products tables
                 table.ajax.reload();
+                // Check if products table exists on the page and refresh it
+                if ($('#productsTable').length) {
+                    $('#productsTable').DataTable().ajax.reload();
+                }
                 // Show success message
                 var toast = '<div class="position-fixed top-0 end-0 p-3" style="z-index: 11"><div class="toast show" role="alert"><div class="toast-body">' + response.success + '</div></div></div>';
                 $('body').append(toast);
-                setTimeout(function() { $('.toast').parent().remove(); }, 3000);
+                setTimeout(function() { $('.toast').parent().remove(); }, 4000); // Longer display for more informative message
             },
             error: function() {
                 // Revert checkbox on error

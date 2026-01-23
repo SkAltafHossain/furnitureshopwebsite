@@ -77,7 +77,7 @@ It is strictly limited to **admin-side features and UI**.
 
 * id
 * category_id
-* product_name
+* product_name (for slug use product name)
 * description
 * price
 * discount_price
