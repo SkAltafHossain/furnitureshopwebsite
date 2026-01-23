@@ -28,7 +28,24 @@ class AuthController extends Controller
             // Merge guest cart with user cart if exists
             $this->mergeGuestCart();
             
+            // Check if request is from modal
+            if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Login successful!',
+                    'redirect' => route('home')
+                ]);
+            }
+            
             return redirect()->intended(route('home'));
+        }
+        
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => false,
+                'message' => 'The provided credentials do not match our records.',
+                'errors' => ['email' => 'The provided credentials do not match our records.']
+            ], 422);
         }
         
         return back()->withErrors([
@@ -48,6 +65,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
+            'terms' => 'required|accepted',
         ]);
         
         $user = User::create([
@@ -62,6 +80,15 @@ class AuthController extends Controller
         
         // Merge guest cart with user cart if exists
         $this->mergeGuestCart();
+        
+        // Check if request is from modal
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration successful!',
+                'redirect' => route('home')
+            ]);
+        }
         
         return redirect()->route('home')->with('success', 'Registration successful!');
     }

@@ -17,126 +17,33 @@
     @stack('styles')
 </head>
 <body>
-    <!-- Top Bar -->
-    <div class="top-bar bg-dark text-white py-2">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-phone me-2"></i>
-                        <span class="me-3">+1234567890</span>
-                        <i class="fas fa-envelope me-2"></i>
-                        <span>info@localshop.com</span>
-                    </div>
-                </div>
-                <div class="col-md-6 text-end">
-                    <div class="d-inline-flex align-items-center">
-                        <a href="{{ route('page.about') }}" class="text-white text-decoration-none me-3">About Us</a>
-                        <a href="{{ route('page.terms') }}" class="text-white text-decoration-none me-3">Terms</a>
-                        <a href="{{ route('page.privacy') }}" class="text-white text-decoration-none">Privacy</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Main Header -->
     <header class="main-header bg-white shadow-sm sticky-top">
-        <div class="container">
-            <div class="row align-items-center py-4">
+        <div class="container-fluid">
+            <div class="row align-items-center py-2">
                 <!-- Logo -->
-                <div class="col-lg-3">
+                <div class="col-auto">
                     <a href="{{ route('home') }}" class="brand-logo text-decoration-none d-flex align-items-center">
-                        <div class="logo-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                        <div class="logo-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
                             <i class="fas fa-store"></i>
                         </div>
                         <div>
-                            <h3 class="brand-name mb-0 text-primary">Local Shop</h3>
-                            <small class="text-muted">Premium Store</small>
+                            <h4 class="brand-name mb-0 text-primary">Local Shop</h4>
                         </div>
                     </a>
                 </div>
                 
-                <!-- Search Bar -->
-                <div class="col-lg-6">
-                    <div class="search-container">
-                        <form class="search-form" action="{{ route('products.index') }}" method="GET">
-                            <div class="input-group input-group-lg">
-                                <input type="search" class="form-control border-end-0" name="search" placeholder="Search for products..." value="{{ request('search') }}">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                
-                <!-- Header Actions -->
-                <div class="col-lg-3">
-                    <div class="header-actions d-flex justify-content-end align-items-center">
-                        <!-- Cart -->
-                        <a href="{{ route('cart.index') }}" class="header-action-btn position-relative me-3">
-                            <div class="action-icon">
-                                <i class="fas fa-shopping-bag"></i>
-                                @if(session('cart'))
-                                    <span class="action-badge">{{ count(session('cart')) }}</span>
-                                @endif
-                            </div>
-                            <span class="action-label">Cart</span>
-                        </a>
-                        
-                        <!-- User Account -->
-                        @if(auth()->check())
-                            <div class="dropdown">
-                                <button class="header-action-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    <div class="action-icon">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                    <span class="action-label">{{ auth()->user()->name }}</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ route('account.index') }}"><i class="fas fa-user me-2"></i> My Account</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('account.orders') }}"><i class="fas fa-shopping-bag me-2"></i> My Orders</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
-                                </ul>
-                            </div>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                @csrf
-                            </form>
-                        @else
-                            <div class="header-actions-group">
-                                <a href="{{ route('login') }}" class="btn btn-outline-primary me-2">
-                                    <i class="fas fa-sign-in-alt me-1"></i> Login
-                                </a>
-                                <a href="{{ route('register') }}" class="btn btn-primary">
-                                    <i class="fas fa-user-plus me-1"></i> Register
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Navigation Menu -->
-        <nav class="main-nav bg-primary">
-            <div class="container">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="main-menu">
+                <!-- Navigation Menu -->
+                <div class="col-auto">
+                    <nav class="main-nav">
                         <ul class="nav">
                             <li class="nav-item">
-                                <a class="nav-link text-white {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
+                                <a class="nav-link text-dark {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
                                     <i class="fas fa-home me-1"></i> Home
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-white {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">
-                                    <i class="fas fa-th-large me-1"></i> All Products
-                                </a>
-                            </li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link text-white dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                <a class="nav-link text-dark dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                     <i class="fas fa-list me-1"></i> Categories
                                 </a>
                                 <ul class="dropdown-menu">
@@ -149,30 +56,297 @@
                                 </ul>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="{{ route('page.about') }}">
-                                    <i class="fas fa-info-circle me-1"></i> About
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-white" href="{{ route('page.terms') }}">
-                                    <i class="fas fa-file-contract me-1"></i> Terms
+                                <a class="nav-link text-dark {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">
+                                    <i class="fas fa-th-large me-1"></i> Products
                                 </a>
                             </li>
                         </ul>
+                    </nav>
+                </div>
+                
+                <!-- Large Search Bar -->
+                <div class="col">
+                    <div class="search-container">
+                        <form class="search-form d-flex" action="{{ route('products.index') }}" method="GET">
+                            <input type="search" class="form-control form-control-sm" name="search" placeholder="Search for products..." value="{{ request('search') }}">
+                            <button class="btn btn-outline-primary" type="submit">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </form>
                     </div>
-                    
-                    <!-- Special Offers -->
-                    <div class="special-offer">
-                        <span class="badge bg-danger text-white">
-                            <i class="fas fa-tag me-1"></i> Special Offers
-                        </span>
+                </div>
+                
+                <!-- Cart -->
+                <div class="col-auto">
+                    <a href="{{ route('cart.index') }}" class="btn btn-outline-primary position-relative">
+                        <i class="fas fa-shopping-bag"></i>
+                        Cart
+                        @if(session('cart'))
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                {{ count(session('cart')) }}
+                            </span>
+                        @endif
+                    </a>
+                </div>
+                
+                <!-- Account Section -->
+                <div class="col-auto">
+                    <div class="header-actions d-flex align-items-center">
+                        @if(auth()->check())
+                            <div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user me-1"></i> {{ auth()->user()->name }}
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{{ route('account.index') }}"><i class="fas fa-user me-2"></i> My Account</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('account.orders') }}"><i class="fas fa-shopping-bag me-2"></i> My Orders</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                                </ul>
+                            </div>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                @csrf
+                            </form>
+                        @else
+                            <button class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </button>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">
+                                <i class="fas fa-user-plus me-1"></i> Register
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </row>
+        </div>
+    </header>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <div class="col-lg-5 d-none d-lg-block">
+                            <div class="auth-sidebar h-100 d-flex align-items-center justify-content-center text-white text-center p-4" style="background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);">
+                                <div>
+                                    <div class="mb-4">
+                                        <i class="fas fa-shopping-cart fa-4x"></i>
+                                    </div>
+                                    <h4 class="mb-3">Welcome Back!</h4>
+                                    <p class="mb-0">Sign in to access your account and continue shopping</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-7">
+                            <div class="p-4 p-lg-5">
+                                <div class="text-center mb-4">
+                                    <h3 class="mb-1">Sign In</h3>
+                                    <p class="text-muted">Enter your credentials to access your account</p>
+                                </div>
+                                
+                                <form method="POST" action="{{ route('login') }}">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label fw-semibold">Email Address</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-0">
+                                                <i class="fas fa-envelope text-primary"></i>
+                                            </span>
+                                            <input type="email" class="form-control border-start-0" 
+                                                   id="email" name="email" value="{{ old('email') }}" 
+                                                   placeholder="Enter your email" required autofocus>
+                                        </div>
+                                        @error('email')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label fw-semibold">Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-0">
+                                                <i class="fas fa-lock text-primary"></i>
+                                            </span>
+                                            <input type="password" class="form-control border-start-0" 
+                                                   id="password" name="password" placeholder="Enter your password" required>
+                                        </div>
+                                        @error('password')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                                            <label class="form-check-label" for="remember">
+                                                Remember me
+                                            </label>
+                                        </div>
+                                        <a href="#" class="text-primary text-decoration-none">Forgot password?</a>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-sign-in-alt me-2"></i> Sign In
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="text-center mt-4">
+                                        <p class="mb-0">Don't have an account? 
+                                            <a href="#" class="text-primary text-decoration-none fw-semibold" 
+                                               data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#registerModal">
+                                                Create one here
+                                            </a>
+                                        </p>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </nav>
-    </header>
+        </div>
+    </div>
 
-    <!-- Flash Messages -->
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <div class="col-lg-5 d-none d-lg-block">
+                            <div class="auth-sidebar h-100 d-flex align-items-center justify-content-center text-white text-center p-4" style="background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);">
+                                <div>
+                                    <div class="mb-4">
+                                        <i class="fas fa-user-plus fa-4x"></i>
+                                    </div>
+                                    <h4 class="mb-3">Join Us Today!</h4>
+                                    <p class="mb-0">Create your account and start shopping amazing products</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-7">
+                            <div class="p-4 p-lg-5">
+                                <div class="text-center mb-4">
+                                    <h3 class="mb-1">Create Account</h3>
+                                    <p class="text-muted">Fill in your details to get started</p>
+                                </div>
+                                
+                                <form method="POST" action="{{ route('register') }}">
+                                    @csrf
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="name" class="form-label fw-semibold">Full Name</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light border-0">
+                                                    <i class="fas fa-user text-primary"></i>
+                                                </span>
+                                                <input type="text" class="form-control border-start-0" 
+                                                       id="name" name="name" value="{{ old('name') }}" 
+                                                       placeholder="Enter your name" required autofocus>
+                                            </div>
+                                            @error('name')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="email" class="form-label fw-semibold">Email Address</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light border-0">
+                                                    <i class="fas fa-envelope text-primary"></i>
+                                                </span>
+                                                <input type="email" class="form-control border-start-0" 
+                                                       id="email" name="email" value="{{ old('email') }}" 
+                                                       placeholder="Enter your email" required>
+                                            </div>
+                                            @error('email')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-0">
+                                                <i class="fas fa-phone text-primary"></i>
+                                            </span>
+                                            <input type="tel" class="form-control border-start-0" 
+                                                   id="phone" name="phone" value="{{ old('phone') }}" 
+                                                   placeholder="+1234567890">
+                                        </div>
+                                        @error('phone')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="password" class="form-label fw-semibold">Password</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light border-0">
+                                                    <i class="fas fa-lock text-primary"></i>
+                                                </span>
+                                                <input type="password" class="form-control border-start-0" 
+                                                       id="password" name="password" placeholder="Create password" required>
+                                            </div>
+                                            @error('password')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="password_confirmation" class="form-label fw-semibold">Confirm Password</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light border-0">
+                                                    <i class="fas fa-lock text-primary"></i>
+                                                </span>
+                                                <input type="password" class="form-control border-start-0" 
+                                                       id="password_confirmation" name="password_confirmation" 
+                                                       placeholder="Confirm password" required>
+                                            </div>
+                                            @error('password_confirmation')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                                            <label class="form-check-label" for="terms">
+                                                I agree to the <a href="{{ route('page.terms') }}" target="_blank" class="text-primary">Terms & Conditions</a> 
+                                                and <a href="{{ route('page.privacy') }}" target="_blank" class="text-primary">Privacy Policy</a>
+                                            </label>
+                                            @error('terms')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-user-plus me-2"></i> Create Account
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="text-center mt-4">
+                                        <p class="mb-0">Already have an account? 
+                                            <a href="#" class="text-primary text-decoration-none fw-semibold" 
+                                               data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                                Sign in here
+                                            </a>
+                                        </p>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     @if(session('success') || session('error'))
         <div class="flash-messages">
             @if(session('success'))

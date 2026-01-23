@@ -40,6 +40,70 @@ $(document).ready(function() {
         }
     });
     
+    // Modal Form Submissions
+    $('#loginModal form, #registerModal form').on('submit', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var submitBtn = form.find('button[type="submit"]');
+        var modal = form.closest('.modal');
+        
+        // Disable submit button and show loading
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: form.serialize(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Show success message
+                    showToast(response.message, 'success');
+                    
+                    // Close modal
+                    modal.modal('hide');
+                    
+                    // Redirect after a short delay
+                    setTimeout(function() {
+                        window.location.href = response.redirect;
+                    }, 1000);
+                } else {
+                    // Handle validation errors
+                    showToast(response.message || 'An error occurred', 'error');
+                    submitBtn.prop('disabled', false).html(submitBtn.data('original-text') || 'Submit');
+                }
+            },
+            error: function(xhr) {
+                var response = xhr.responseJSON || {};
+                var message = response.message || 'An error occurred. Please try again.';
+                
+                // Show validation errors if any
+                if (response.errors) {
+                    var firstError = Object.keys(response.errors)[0];
+                    message = response.errors[firstError][0];
+                }
+                
+                showToast(message, 'error');
+                submitBtn.prop('disabled', false).html(submitBtn.data('original-text') || 'Submit');
+            }
+        });
+    });
+    
+    // Store original button text
+    $('#loginModal button[type="submit"], #registerModal button[type="submit"]').each(function() {
+        $(this).data('original-text', $(this).html());
+    });
+    
+    // Reset forms when modals are hidden
+    $('#loginModal, #registerModal').on('hidden.bs.modal', function() {
+        $(this).find('form')[0].reset();
+        $(this).find('.is-invalid').removeClass('is-invalid');
+        $(this).find('.invalid-feedback').remove();
+        $(this).find('button[type="submit"]').prop('disabled', false).html($(this).find('button[type="submit"]').data('original-text'));
+    });
+    
     // Cart functionality
     function updateCartCount() {
         $.get('{{ route("cart.index") }}', function(data) {
