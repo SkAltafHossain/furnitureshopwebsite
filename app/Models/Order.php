@@ -10,12 +10,16 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'order_id',
         'customer_name',
+        'customer_email',
+        'customer_phone',
+        'customer_address',
         'total_amount',
-        'payment_type',
+        'payment_method',
+        'payment_status',
         'order_status',
-        'created_at',
     ];
 
     protected $casts = [
@@ -45,7 +49,17 @@ class Order extends Model
 
     public function getPaymentTypeBadgeAttribute()
     {
-        $badgeClass = $this->payment_type === 'COD' ? 'bg-success' : 'bg-info';
-        return '<span class="badge ' . $badgeClass . '">' . $this->payment_type . '</span>';
+        $badgeClass = $this->payment_method === 'COD' ? 'bg-success' : 'bg-info';
+        return '<span class="badge ' . $badgeClass . '">' . $this->payment_method . '</span>';
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

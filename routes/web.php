@@ -2,6 +2,39 @@
 
 use Illuminate\Support\Facades\Route;
 
+// Website Routes (Customer-facing)
+Route::get('/', [App\Http\Controllers\Website\HomeController::class, 'index'])->name('home');
+Route::get('/products', [App\Http\Controllers\Website\ProductController::class, 'index'])->name('products.index');
+Route::get('/products/{slug}', [App\Http\Controllers\Website\ProductController::class, 'show'])->name('products.show');
+Route::get('/category/{slug}', [App\Http\Controllers\Website\CategoryController::class, 'show'])->name('category.show');
+Route::get('/cart', [App\Http\Controllers\Website\CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add', [App\Http\Controllers\Website\CartController::class, 'add'])->name('cart.add');
+Route::patch('/cart/update', [App\Http\Controllers\Website\CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/remove', [App\Http\Controllers\Website\CartController::class, 'remove'])->name('cart.remove');
+Route::get('/checkout', [App\Http\Controllers\Website\CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [App\Http\Controllers\Website\CheckoutController::class, 'process'])->name('checkout.process');
+
+// Authentication Routes
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [App\Http\Controllers\Website\AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [App\Http\Controllers\Website\AuthController::class, 'login']);
+    Route::get('/register', [App\Http\Controllers\Website\AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [App\Http\Controllers\Website\AuthController::class, 'register']);
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [App\Http\Controllers\Website\AuthController::class, 'logout'])->name('logout');
+    Route::get('/my-account', [App\Http\Controllers\Website\AccountController::class, 'index'])->name('account.index');
+    Route::put('/my-account', [App\Http\Controllers\Website\AccountController::class, 'update'])->name('account.update');
+    Route::get('/my-orders', [App\Http\Controllers\Website\AccountController::class, 'orders'])->name('account.orders');
+    Route::get('/my-orders/{id}', [App\Http\Controllers\Website\AccountController::class, 'orderDetails'])->name('account.order-details');
+});
+
+// Static Pages
+Route::get('/about-us', [App\Http\Controllers\Website\PageController::class, 'about'])->name('page.about');
+Route::get('/terms', [App\Http\Controllers\Website\PageController::class, 'terms'])->name('page.terms');
+Route::get('/privacy', [App\Http\Controllers\Website\PageController::class, 'privacy'])->name('page.privacy');
+
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     // Guest routes for admin
@@ -62,6 +95,3 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
-Route::get('/', function () {
-    return redirect()->route('admin.login');
-});

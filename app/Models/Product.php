@@ -12,20 +12,22 @@ class Product extends Model
 
     protected $fillable = [
         'category_id',
-        'product_name',
+        'name',
         'slug',
         'description',
         'price',
         'discount_price',
-        'stock_quantity',
-        'product_image',
+        'stock',
+        'image',
         'status',
+        'featured',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'discount_price' => 'decimal:2',
-        'stock_quantity' => 'integer',
+        'stock' => 'integer',
+        'featured' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -48,6 +50,6 @@ class Product extends Model
 
     public function getIsInStockAttribute()
     {
-        return $this->stock_quantity > 0;
+        return $this->stock > 0;
     }
 }
