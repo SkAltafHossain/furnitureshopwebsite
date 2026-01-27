@@ -152,7 +152,6 @@ body {
 /* Main Content */
 .main-content {
     min-height: calc(100vh - 400px);
-    padding-top: 2rem;
 }
 
 /* Hero Slider */
