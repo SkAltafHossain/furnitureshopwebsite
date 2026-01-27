@@ -119,7 +119,7 @@
             <div class="action-buttons d-flex gap-2">
                 <button class="btn btn-primary flex-fill" 
                         {{ $product->stock <= 0 ? 'disabled' : '' }}
-                        onclick="addToCart({{ $product->id }})">
+                        onclick="handleAddToCart({{ $product->id }})">
                     <i class="fas fa-cart-plus me-1"></i> Add to Cart
                 </button>
                 <button class="btn btn-success flex-fill" 
@@ -182,6 +182,9 @@
 </style>
 
 <script>
+// Global authentication status
+window.isAuthenticated = @if(auth()->check()) true @else false @endif;
+
 // These functions should be defined in your main layout or a separate JS file
 function toggleWishlist(btn, productId) {
     btn.classList.toggle('active');
@@ -202,13 +205,27 @@ function quickView(productId) {
     console.log('Quick view for product:', productId);
 }
 
-function addToCart(productId) {
-    // Add to cart logic here
-    console.log('Add to cart:', productId);
+function handleAddToCart(productId) {
+    // Check if user is authenticated using global variable
+    if (window.isAuthenticated) {
+        // User is logged in - proceed with add to cart
+        console.log('Add to cart:', productId);
+        // Add your actual add to cart logic here
+    } else {
+        // User is not logged in - show login modal
+        $('#loginModal').modal('show');
+    }
 }
 
 function buyNow(productId) {
-    // Buy now logic here
-    console.log('Buy now:', productId);
+    // Check if user is authenticated using global variable
+    if (window.isAuthenticated) {
+        // User is logged in - proceed with buy now
+        console.log('Buy now:', productId);
+        // Add your actual buy now logic here
+    } else {
+        // User is not logged in - show login modal
+        $('#loginModal').modal('show');
+    }
 }
 </script>

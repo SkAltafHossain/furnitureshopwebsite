@@ -41,7 +41,7 @@ $(document).ready(function() {
     });
     
     // Modal Form Submissions
-    $('#loginModal form, #registerModal form').on('submit', function(e) {
+    $('#modalLoginForm, #modalRegisterForm').on('submit', function(e) {
         e.preventDefault();
         var form = $(this);
         var submitBtn = form.find('button[type="submit"]');
@@ -106,7 +106,7 @@ $(document).ready(function() {
     
     // Cart functionality
     function updateCartCount() {
-        $.get('{{ route("cart.index") }}', function(data) {
+        $.get(cartUrls.index, function(data) {
             // Update cart badge if needed
             var cartCount = $('.action-badge');
             if (cartCount.length > 0) {
@@ -231,7 +231,7 @@ function showToast(message, type = 'success') {
     var icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
     
     var toast = `
-        <div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
             <div class="toast show" role="alert">
                 <div class="toast-body ${toastClass} text-white d-flex align-items-center">
                     <i class="${icon} me-2"></i>
@@ -278,12 +278,12 @@ function isElementInViewport(el) {
 
 function addToCart(productId, quantity = 1) {
     $.ajax({
-        url: '{{ route("cart.add") }}',
+        url: cartUrls.add,
         method: 'POST',
         data: {
             product_id: productId,
             quantity: quantity,
-            _token: '{{ csrf_token() }}'
+            _token: csrfToken
         },
         success: function(response) {
             // Update cart count
@@ -314,11 +314,11 @@ function removeFromCart(productId) {
     }
     
     $.ajax({
-        url: '{{ route("cart.remove") }}',
+        url: cartUrls.remove,
         method: 'DELETE',
         data: {
             product_id: productId,
-            _token: '{{ csrf_token() }}'
+            _token: csrfToken
         },
         success: function(response) {
             showToast(response.message, 'success');
@@ -337,12 +337,12 @@ function removeFromCart(productId) {
 
 function updateCartQuantity(productId, quantity) {
     $.ajax({
-        url: '{{ route("cart.update") }}',
+        url: cartUrls.update,
         method: 'PATCH',
         data: {
             product_id: productId,
             quantity: quantity,
-            _token: '{{ csrf_token() }}'
+            _token: csrfToken
         },
         success: function(response) {
             if (response.success) {

@@ -78,15 +78,22 @@
                 
                 <!-- Cart -->
                 <div class="col-auto">
-                    <a href="{{ route('cart.index') }}" class="btn btn-outline-primary position-relative">
-                        <i class="fas fa-shopping-bag"></i>
-                        Cart
-                        @if(session('cart'))
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                                {{ count(session('cart')) }}
-                            </span>
-                        @endif
-                    </a>
+                    @if(auth()->check())
+                        <a href="{{ route('cart.index') }}" class="btn btn-outline-primary position-relative">
+                            <i class="fas fa-shopping-bag"></i>
+                            Cart
+                            @if(session('cart'))
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                    {{ count(session('cart')) }}
+                                </span>
+                            @endif
+                        </a>
+                    @else
+                        <button class="btn btn-outline-primary position-relative" onclick="$('#loginModal').modal('show');">
+                            <i class="fas fa-shopping-bag"></i>
+                            Cart
+                        </button>
+                    @endif
                 </div>
                 
                 <!-- Account Section -->
@@ -145,7 +152,7 @@
                                     <p class="text-muted">Enter your credentials to access your account</p>
                                 </div>
                                 
-                                <form method="POST" action="{{ route('login') }}">
+                                <form method="POST" action="{{ route('login') }}" id="modalLoginForm">
                                     @csrf
                                     <div class="mb-3">
                                         <label for="email" class="form-label fw-semibold">Email Address</label>
@@ -233,7 +240,7 @@
                                     <p class="text-muted">Fill in your details to get started</p>
                                 </div>
                                 
-                                <form method="POST" action="{{ route('register') }}">
+                                <form method="POST" action="{{ route('register') }}" id="modalRegisterForm">
                                     @csrf
                                     
                                     <div class="row">
@@ -347,28 +354,19 @@
             </div>
         </div>
     </div>
+    <!-- Flash Messages as Toasts -->
     @if(session('success') || session('error'))
-        <div class="flash-messages">
+        <script>
+        $(document).ready(function() {
             @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show m-0" role="alert">
-                    <div class="container">
-                        <i class="fas fa-check-circle me-2"></i>
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                </div>
+                showToast('{{ session('success') }}', 'success');
             @endif
             
             @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show m-0" role="alert">
-                    <div class="container">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        {{ session('error') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                </div>
+                showToast('{{ session('error') }}', 'error');
             @endif
-        </div>
+        });
+        </script>
     @endif
 
     <!-- Main Content -->
@@ -479,6 +477,96 @@
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <!-- Custom JS -->
     <script src="{{ asset('js/website.js') }}"></script>
+    
+    <!-- Cart URLs for JavaScript -->
+    <script>
+    window.cartUrls = {
+        add: '{{ route("cart.add") }}',
+        remove: '{{ route("cart.remove") }}',
+        update: '{{ route("cart.update") }}',
+        index: '{{ route("cart.index") }}'
+    };
+    window.csrfToken = '{{ csrf_token() }}';
+    </script>
+    
+    <!-- Modal Form Handling -->
+    <script>
+    $(document).ready(function() {
+        // Clear form errors when modal is hidden
+        $('#loginModal, #registerModal').on('hidden.bs.modal', function() {
+            $(this).find('form').trigger('reset');
+            $(this).find('.invalid-feedback').remove();
+            $(this).find('.is-invalid').removeClass('is-invalid');
+            $(this).find('.alert').remove();
+        });
+        
+        // Toast notification function - positioned at bottom
+        function showToast(message, type) {
+            var toastClass = type === 'success' ? 'bg-success' : 'bg-danger';
+            var iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            var title = type === 'success' ? 'Success' : 'Error';
+            
+            // Remove existing toasts
+            $('.custom-toast').remove();
+            
+            var toast = `
+                <div class="custom-toast position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+                    <div class="toast show align-items-center text-white ${toastClass} border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${iconClass} me-2"></i>
+                                <strong>${title}:</strong> ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('body').append(toast);
+            
+            // Auto-remove after 4 seconds
+            setTimeout(function() {
+                $('.custom-toast').fadeOut(500, function() {
+                    $(this).remove();
+                });
+            }, 4000);
+        }
+        
+        // Show validation errors in a more elegant way
+        function showValidationErrors(errors) {
+            var errorHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">';
+            errorHtml += '<i class="fas fa-exclamation-triangle me-2"></i><strong>Error:</strong><br>';
+            
+            if (typeof errors === 'string') {
+                errorHtml += errors;
+            } else if (Array.isArray(errors)) {
+                errorHtml += errors.join('<br>');
+            } else {
+                Object.values(errors).forEach(function(error) {
+                    if (Array.isArray(error)) {
+                        errorHtml += error.join('<br>') + '<br>';
+                    } else {
+                        errorHtml += error + '<br>';
+                    }
+                });
+            }
+            
+            errorHtml += '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+            errorHtml += '</div>';
+            
+            // Insert at the top of the modal body
+            $('.modal-body').prepend(errorHtml);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut(500, function() {
+                    $(this).remove();
+                });
+            }, 5000);
+        }
+    });
+    </script>
     
     @stack('scripts')
 </body>

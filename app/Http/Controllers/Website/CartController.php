@@ -15,6 +15,14 @@ class CartController extends Controller
     
     public function add(Request $request)
     {
+        // Debug logging
+        \Log::info('Cart add method called', [
+            'product_id' => $request->input('product_id'),
+            'quantity' => $request->input('quantity'),
+            'method' => $request->method(),
+            'url' => $request->fullUrl()
+        ]);
+        
         $productId = $request->input('product_id');
         $quantity = $request->input('quantity', 1);
         

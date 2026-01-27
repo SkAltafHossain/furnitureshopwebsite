@@ -411,6 +411,11 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // Check if user is logged in
+    function isLoggedIn() {
+        return @auth()->check();
+    }
+    
     // Add to cart form
     $('#add-to-cart-form').submit(function(e) {
         e.preventDefault();
@@ -422,8 +427,18 @@ $(document).ready(function() {
             return;
         }
         
+        // Check if user is logged in
+        if (!isLoggedIn()) {
+            $('#loginModal').modal('show');
+            return;
+        }
+        
+        // Debug: Log the URL being used
+        var cartAddUrl = '{{ route("cart.add") }}';
+        console.log('Cart Add URL:', cartAddUrl);
+        
         $.ajax({
-            url: '{{ route("cart.add") }}',
+            url: cartAddUrl,
             method: 'POST',
             data: {
                 product_id: {{ $product->id }},
@@ -435,7 +450,11 @@ $(document).ready(function() {
                 $('.badge').text(response.cart_count);
                 
                 // Show success message
-                showToast(response.message, 'success');
+                if (typeof showToast === 'function') {
+                    showToast(response.message, 'success');
+                } else {
+                    alert(response.message);
+                }
                 
                 // Disable button temporarily
                 button.prop('disabled', true).html('<i class="fas fa-check"></i> Added to Cart');
@@ -443,8 +462,16 @@ $(document).ready(function() {
                     button.prop('disabled', false).html('<i class="fas fa-cart-plus"></i> Add to Cart');
                 }, 2000);
             },
-            error: function() {
-                showToast('Error occurred while adding product to cart.', 'error');
+            error: function(xhr) {
+                var errorMessage = 'Error occurred while adding product to cart.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                if (typeof showToast === 'function') {
+                    showToast(errorMessage, 'error');
+                } else {
+                    alert(errorMessage);
+                }
             }
         });
     });
@@ -512,7 +539,7 @@ $(document).ready(function() {
     function showToast(message, type) {
         var toastClass = type === 'success' ? 'bg-success' : 'bg-danger';
         var toast = `
-            <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
                 <div class="toast show" role="alert">
                     <div class="toast-header ${toastClass} text-white">
                         <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
@@ -553,11 +580,21 @@ $(document).ready(function() {
     
     // Buy Now button functionality
     $('.btn-success').click(function() {
+        // Check if user is logged in
+        if (!isLoggedIn()) {
+            $('#loginModal').modal('show');
+            return;
+        }
+        
         // First add to cart, then redirect to checkout
         var quantity = $('input[name="quantity"]').val();
         
+        // Debug: Log the URL being used
+        var cartAddUrl = '{{ route("cart.add") }}';
+        console.log('Buy Now Cart Add URL:', cartAddUrl);
+        
         $.ajax({
-            url: '{{ route("cart.add") }}',
+            url: cartAddUrl,
             method: 'POST',
             data: {
                 product_id: {{ $product->id }},
@@ -569,10 +606,18 @@ $(document).ready(function() {
                 $('.badge').text(response.cart_count);
                 
                 // Redirect to checkout
-                window.location.href = '/checkout';
+                window.location.href = '{{ route("checkout.index") }}';
             },
-            error: function() {
-                showToast('Error occurred while processing your request.', 'error');
+            error: function(xhr) {
+                var errorMessage = 'Error occurred while processing your request.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                if (typeof showToast === 'function') {
+                    showToast(errorMessage, 'error');
+                } else {
+                    alert(errorMessage);
+                }
             }
         });
     });
