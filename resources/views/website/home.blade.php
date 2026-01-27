@@ -5,12 +5,12 @@
 @section('content')
 <!-- Hero Banner Slider -->
 <section class="hero-slider">
-    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div id="heroCarousel" class="carousel slide">
         <div class="carousel-indicators">
             @forelse($banners as $index => $banner)
-                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ $index }}" {{ $index == 0 ? 'class="active"' : '' }}></button>
+                <span class="dot {{ $index == 0 ? 'active' : '' }}" data-slide="{{ $index }}"></span>
             @empty
-                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+                <span class="dot active" data-slide="0"></span>
             @endforelse
         </div>
         <div class="carousel-inner">
@@ -19,34 +19,24 @@
                     @if($banner->image)
                         <img src="{{ asset('storage/' . $banner->image) }}" class="d-block w-100" alt="{{ $banner->title }}">
                     @else
-                        <div class="d-block w-100 bg-primary text-white d-flex align-items-center justify-content-center" style="height: 400px;">
-                            <div class="text-center">
-                                <h2>{{ $banner->title ?? 'Welcome to Local Shop' }}</h2>
-                                <p>{{ $banner->description ?? 'Your trusted local e-commerce store' }}</p>
-                            </div>
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyMCIgaGVpZ2h0PSI1MDAiIHZpZXdCb3g9IjAgMCAxOTIwIDUwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE5MjAiIGhlaWdodD0iNTAwIiBmaWxsPSIjMGRkNmZkIi8+Cjx0ZXh0IHg9Ijk2MCIgeT0iMjUwIiBmaWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj57eyBiYW5uZXItPnRpdGxlIH19PC90ZXh0Pgo8L3N2Zz4K" class="d-block w-100" alt="{{ $banner->title }}">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h2>{{ $banner->title ?? 'Welcome to Local Shop' }}</h2>
+                            <p>{{ $banner->description ?? 'Your trusted local e-commerce store' }}</p>
                         </div>
                     @endif
                 </div>
             @empty
                 <div class="carousel-item active">
-                    <div class="d-block w-100 bg-primary text-white d-flex align-items-center justify-content-center" style="height: 400px;">
-                        <div class="text-center">
-                            <h2>Welcome to Local Shop</h2>
-                            <p>Your trusted local e-commerce store</p>
-                            <a href="{{ route('products.index') }}" class="btn btn-light btn-lg">Shop Now</a>
-                        </div>
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyMCIgaGVpZ2h0PSI1MDAiIHZpZXdCb3g9IjAgMCAxOTIwIDUwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE5MjAiIGhlaWdodD0iNTAwIiBmaWxsPSIjMGRkNmZkIi8+Cjx0ZXh0IHg9Ijk2MCIgeT0iMjUwIiBmaWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5XZWxjb21lIHRvIExvY2FsIFNob3A8L3RleHQ+Cjwvc3ZnPgo=" class="d-block w-100" alt="Welcome to Local Shop">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h2>Welcome to Local Shop</h2>
+                        <p>Your trusted local e-commerce store</p>
+                        <a href="{{ route('products.index') }}" class="btn btn-light btn-lg">Shop Now</a>
                     </div>
                 </div>
             @endforelse
         </div>
-        @if($banners->count() > 1)
-            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
-            </button>
-        @endif
     </div>
 </section>
 
@@ -132,47 +122,76 @@
     </div>
 </section>
 @endif
-
-<!-- Shop Highlights -->
-<section class="py-5 bg-light">
-    <div class="container-fluid">
-        <div class="row text-center">
-            <div class="col-md-3 mb-4">
-                <div class="highlight-item">
-                    <i class="fas fa-shipping-fast fa-3x text-primary mb-3"></i>
-                    <h5>Free Shipping</h5>
-                    <p class="text-muted">On orders above ₹500</p>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="highlight-item">
-                    <i class="fas fa-undo fa-3x text-primary mb-3"></i>
-                    <h5>Easy Returns</h5>
-                    <p class="text-muted">7-day return policy</p>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="highlight-item">
-                    <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
-                    <h5>Secure Payment</h5>
-                    <p class="text-muted">100% secure transactions</p>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="highlight-item">
-                    <i class="fas fa-headset fa-3x text-primary mb-3"></i>
-                    <h5>24/7 Support</h5>
-                    <p class="text-muted">Dedicated customer support</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 @endsection
 
 @push('scripts')
 <script>
 $(document).ready(function() {
+    console.log('Bootstrap version:', typeof bootstrap !== 'undefined' ? 'loaded' : 'NOT LOADED');
+    
+    var carouselElement = document.getElementById('heroCarousel');
+    console.log('Carousel element found:', !!carouselElement);
+    
+    if (carouselElement && typeof bootstrap !== 'undefined') {
+        try {
+            // Get carousel items
+            var items = carouselElement.querySelectorAll('.carousel-item');
+            var currentIndex = 0;
+            
+            console.log('Found carousel items:', items.length);
+            
+            // Manual slide function
+            function goToSlide(index) {
+                // Remove active from all items
+                items.forEach(function(item) {
+                    item.classList.remove('active');
+                });
+                
+                // Remove active from all dots
+                var dots = carouselElement.querySelectorAll('.dot');
+                dots.forEach(function(dot) {
+                    dot.classList.remove('active');
+                });
+                
+                // Add active to target item
+                if (items[index]) {
+                    items[index].classList.add('active');
+                    currentIndex = index;
+                    console.log('Slid to item:', index);
+                    
+                    // Add active to corresponding dot
+                    if (dots[index]) {
+                        dots[index].classList.add('active');
+                    }
+                }
+            }
+            
+            // Auto-slide function
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % items.length;
+                goToSlide(currentIndex);
+            }
+            
+            // Start auto-slide
+            setInterval(nextSlide, 3000);
+            console.log('Auto-slide started with manual sliding');
+            
+            // Manual controls
+            var dots = carouselElement.querySelectorAll('.dot');
+            
+            // Dot indicator clicks
+            dots.forEach(function(dot, index) {
+                dot.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    goToSlide(index);
+                });
+            });
+            
+        } catch (error) {
+            console.error('Error with carousel:', error);
+        }
+    }
+    
     $('.add-to-cart').click(function(e) {
         e.preventDefault();
         var productId = $(this).data('product-id');
@@ -187,15 +206,12 @@ $(document).ready(function() {
                 _token: '{{ csrf_token() }}'
             },
             success: function(response) {
-                // Update cart count
                 $('.badge').text(response.cart_count);
                 
-                // Show success message
                 var toast = '<div class="position-fixed top-0 end-0 p-3" style="z-index: 11"><div class="toast show" role="alert"><div class="toast-body">' + response.message + '</div></div></div>';
                 $('body').append(toast);
                 setTimeout(function() { $('.toast').parent().remove(); }, 3000);
                 
-                // Disable button temporarily
                 button.prop('disabled', true).html('<i class="fas fa-check"></i> Added');
                 setTimeout(function() {
                     button.prop('disabled', false).html('<i class="fas fa-cart-plus"></i> Add to Cart');
