@@ -74,7 +74,7 @@
                                     </div>
                                 </div>
                                 <div class="col">
-                                    <button type="submit" class="btn btn-primary w-100" {{ $product->stock <= 0 ? 'disabled' : '' }}>
+                                    <button type="button" class="btn btn-primary w-100 add-to-cart-btn" {{ $product->stock <= 0 ? 'disabled' : '' }}>
                                         <i class="fas fa-cart-plus me-1"></i> Add to Cart
                                     </button>
                                 </div>
@@ -413,29 +413,42 @@
 $(document).ready(function() {
     // Check if user is logged in
     function isLoggedIn() {
-        return @auth()->check();
+        return @if(auth()->check()) true @else false @endif;
     }
     
-    // Add to cart form
-    $('#add-to-cart-form').submit(function(e) {
-        e.preventDefault();
+    // Add to cart button functionality
+    $('.add-to-cart-btn').click(function() {
+        console.log('Add to Cart button clicked');
         
-        var quantity = $('input[name="quantity"]').val();
-        var button = $(this).find('button[type="submit"]');
+        var button = $(this);
         
         if (button.prop('disabled')) {
+            console.log('Add to Cart button is disabled');
             return;
         }
         
         // Check if user is logged in
-        if (!isLoggedIn()) {
+        console.log('Checking if user is logged in...');
+        var userLoggedIn = isLoggedIn();
+        console.log('Add to Cart - User logged in:', userLoggedIn);
+        
+        if (!userLoggedIn) {
+            console.log('Add to Cart - User not logged in, showing login modal');
             $('#loginModal').modal('show');
             return;
         }
         
+        // Get quantity
+        var quantity = $('input[name="quantity"]').val();
+        
         // Debug: Log the URL being used
         var cartAddUrl = '{{ route("cart.add") }}';
-        console.log('Cart Add URL:', cartAddUrl);
+        console.log('Add to Cart URL:', cartAddUrl);
+        console.log('Product ID: {{ $product->id }}');
+        console.log('Quantity:', quantity);
+        
+        // Show loading state
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Adding...');
         
         $.ajax({
             url: cartAddUrl,
@@ -446,23 +459,29 @@ $(document).ready(function() {
                 _token: '{{ csrf_token() }}'
             },
             success: function(response) {
-                // Update cart count
-                $('.badge').text(response.cart_count);
+                console.log('Add to Cart success:', response);
+                
+                // Reset button
+                button.prop('disabled', false).html('<i class="fas fa-cart-plus me-1"></i> Add to Cart');
+                
+                // Update cart count if available
+                if (response.cart_count) {
+                    $('.badge').text(response.cart_count);
+                }
                 
                 // Show success message
                 if (typeof showToast === 'function') {
-                    showToast(response.message, 'success');
+                    showToast(response.message || 'Product added to cart successfully!', 'success');
                 } else {
-                    alert(response.message);
+                    alert('Product added to cart successfully!');
                 }
-                
-                // Disable button temporarily
-                button.prop('disabled', true).html('<i class="fas fa-check"></i> Added to Cart');
-                setTimeout(function() {
-                    button.prop('disabled', false).html('<i class="fas fa-cart-plus"></i> Add to Cart');
-                }, 2000);
             },
             error: function(xhr) {
+                console.log('Add to Cart error:', xhr);
+                
+                // Reset button
+                button.prop('disabled', false).html('<i class="fas fa-cart-plus me-1"></i> Add to Cart');
+                
                 var errorMessage = 'Error occurred while adding product to cart.';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;
@@ -580,8 +599,13 @@ $(document).ready(function() {
     
     // Buy Now button functionality
     $('.btn-success').click(function() {
+        console.log('Buy Now button clicked');
         // Check if user is logged in
-        if (!isLoggedIn()) {
+        var userLoggedIn = isLoggedIn();
+        console.log('Buy Now - User logged in:', userLoggedIn);
+        
+        if (!userLoggedIn) {
+            console.log('Buy Now - User not logged in, showing login modal');
             $('#loginModal').modal('show');
             return;
         }
