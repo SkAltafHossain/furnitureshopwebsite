@@ -6,7 +6,7 @@
 <div class="container-fluid py-5">
     <h1 class="mb-4">Shopping Cart</h1>
     
-    @forelse($cart as $productId => $item)
+    @if(count($cart) > 0)
         <div class="row">
             <!-- Cart Items -->
             <div class="col-md-8">
@@ -50,15 +50,18 @@
                                 
                                 <!-- Quantity Controls -->
                                 <div class="me-3">
-                                    <div class="input-group" style="width: 120px;">
-                                        <button class="btn btn-outline-secondary quantity-decrease" type="button" data-product-id="{{ $productId }}">
-                                            <i class="fas fa-minus"></i>
+                                    <div class="quantity-controls d-flex align-items-center border rounded" style="width: 140px;">
+                                        <button class="btn btn-link quantity-decrease p-2 text-decoration-none" type="button" data-product-id="{{ $productId }}">
+                                            <i class="fas fa-minus text-muted"></i>
                                         </button>
-                                        <input type="number" class="form-control text-center quantity-input" value="{{ $item['quantity'] }}" min="1" max="{{ $product->stock }}" data-product-id="{{ $productId }}">
-                                        <button class="btn btn-outline-secondary quantity-increase" type="button" data-product-id="{{ $productId }}">
-                                            <i class="fas fa-plus"></i>
+                                        <input type="number" class="form-control border-0 text-center quantity-input fw-bold" value="{{ $item['quantity'] }}" min="1" max="{{ $product->stock }}" data-product-id="{{ $productId }}" style="background: transparent; cursor: default;" readonly>
+                                        <button class="btn btn-link quantity-increase p-2 text-decoration-none" type="button" data-product-id="{{ $productId }}">
+                                            <i class="fas fa-plus text-muted"></i>
                                         </button>
                                     </div>
+                                    @if($product->stock <= 5)
+                                        <small class="text-danger">Only {{ $product->stock }} left</small>
+                                    @endif
                                 </div>
                                 
                                 <!-- Item Total & Remove -->
@@ -141,7 +144,7 @@
                 </div>
             </div>
         </div>
-    @empty
+    @else
         <div class="text-center py-5">
             <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
             <h3>Your cart is empty</h3>
@@ -150,45 +153,98 @@
                 <i class="fas fa-shopping-bag"></i> Start Shopping
             </a>
         </div>
-    @endforelse
+    @endif
 </div>
 @endsection
+
+@push('styles')
+<style>
+.quantity-controls {
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.quantity-controls:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.quantity-controls .quantity-input {
+    font-size: 16px;
+    color: #495057;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    pointer-events: none;
+}
+
+.quantity-controls .quantity-input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.quantity-controls .btn-link:hover {
+    background: rgba(0,0,0,0.05);
+    border-radius: 4px;
+}
+
+.quantity-controls .btn-link:hover i {
+    color: #007bff !important;
+}
+
+.quantity-controls .btn-link:active {
+    transform: scale(0.95);
+}
+</style>
+@endpush
 
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Update quantity
-    $('.quantity-decrease, .quantity-increase').click(function() {
-        var productId = $(this).data('product-id');
-        var input = $('.quantity-input[data-product-id="' + productId + '"]');
-        var currentValue = parseInt(input.val());
-        var max = parseInt(input.attr('max'));
-        
-        if ($(this).hasClass('quantity-decrease')) {
-            if (currentValue > 1) {
-                input.val(currentValue - 1);
-                updateCartQuantity(productId, currentValue - 1);
-            }
-        } else {
-            if (!max || currentValue < max) {
-                input.val(currentValue + 1);
-                updateCartQuantity(productId, currentValue + 1);
-            }
+    var updating = false; // Flag to prevent multiple updates
+    
+    // Update quantity - Simple version
+    $('.quantity-decrease').click(function() {
+        if (updating) return;
+        console.log('Decrease clicked');
+        var $input = $(this).siblings('.quantity-input');
+        var currentVal = parseInt($input.val()) || 1;
+        console.log('Current value:', currentVal);
+        if (currentVal > 1) {
+            $input.val(currentVal - 1);
+            console.log('Set input to:', currentVal - 1);
+            updateCartQuantity($input.data('product-id'), currentVal - 1, $input);
+        }
+    });
+    
+    $('.quantity-increase').click(function() {
+        if (updating) return;
+        console.log('Increase clicked');
+        var $input = $(this).siblings('.quantity-input');
+        var currentVal = parseInt($input.val()) || 1;
+        var max = parseInt($input.attr('max')) || 9999;
+        console.log('Current value:', currentVal, 'Max:', max);
+        if (currentVal < max) {
+            $input.val(currentVal + 1);
+            console.log('Set input to:', currentVal + 1);
+            updateCartQuantity($input.data('product-id'), currentVal + 1, $input);
         }
     });
     
     // Manual quantity input change
     $('.quantity-input').change(function() {
-        var productId = $(this).data('product-id');
-        var quantity = parseInt($(this).val());
-        var max = parseInt($(this).attr('max'));
+        var $input = $(this);
+        var productId = $input.data('product-id');
+        var quantity = parseInt($input.val()) || 1;  // Default to 1 if invalid
+        var max = parseInt($input.attr('max')) || 9999;
         
-        if (quantity >= 1 && (!max || quantity <= max)) {
-            updateCartQuantity(productId, quantity);
-        } else {
-            // Reset to valid quantity
-            $(this).val(Math.max(1, Math.min(quantity, max || 1)));
-        }
+        // Ensure quantity is within bounds
+        quantity = Math.max(1, Math.min(quantity, max));
+        $input.val(quantity);  // Update input with validated value
+        
+        // Update cart with the validated quantity
+        updateCartQuantity(productId, quantity, $input);
     });
     
     // Remove item
@@ -200,7 +256,10 @@ $(document).ready(function() {
         }
     });
     
-    function updateCartQuantity(productId, quantity) {
+    function updateCartQuantity(productId, quantity, input) {
+        if (updating) return;
+        updating = true;
+        console.log('Sending to server:', productId, quantity);
         $.ajax({
             url: '{{ route("cart.update") }}',
             method: 'PATCH',
@@ -210,16 +269,79 @@ $(document).ready(function() {
                 _token: '{{ csrf_token() }}'
             },
             success: function(response) {
+                console.log('Server response:', response);
                 if (response.success) {
-                    location.reload(); // Reload to update totals
+                    // Update cart totals without reloading
+                    updateCartTotals();
+                    showToast('Cart updated successfully', 'success');
                 } else {
+                    // Revert the input value if update failed
+                    var currentVal = parseInt(input.val());
+                    input.val(currentVal - 1); // Simple revert
                     showToast(response.message || 'Error updating cart', 'error');
                 }
+                updating = false;
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.log('AJAX error:', error);
+                // Revert the input value if error occurred
+                var currentVal = parseInt(input.val());
+                input.val(currentVal - 1); // Simple revert
                 showToast('Error occurred while updating cart.', 'error');
+                updating = false;
             }
         });
+    }
+    
+    function updateCartTotals() {
+        console.log('updateCartTotals called');
+        // Update the order summary section
+        var subtotal = 0;
+        var totalItems = 0;
+        
+        $('.quantity-input').each(function() {
+            var productId = $(this).data('product-id');
+            var quantity = parseInt($(this).val());
+            console.log('Reading input value:', quantity, 'for product:', productId);
+            var priceElement = $(this).closest('.cart-item').find('.text-primary.fw-bold');
+            var price = parseFloat(priceElement.text().replace('₹', '').replace(',', ''));
+            
+            subtotal += price * quantity;
+            totalItems += quantity;
+            
+            // Update item total
+            var itemTotal = price * quantity;
+            $(this).closest('.cart-item').find('.text-end .fw-bold').text('₹' + itemTotal.toFixed(2));
+        });
+        
+        var shipping = subtotal > 500 ? 0 : 50;
+        var total = subtotal + shipping;
+        
+        // Update order summary
+        $('.card-header:contains("Order Summary")').closest('.card').find('.d-flex justify-content-between').each(function() {
+            var text = $(this).find('span:first').text();
+            if (text.includes('Subtotal')) {
+                $(this).find('span:last').text('₹' + subtotal.toFixed(2));
+            } else if (text.includes('Shipping')) {
+                $(this).find('span:last').text(shipping == 0 ? 'FREE' : '₹' + shipping.toFixed(2));
+            } else if (text.includes('Total')) {
+                $(this).find('span:last').text('₹' + total.toFixed(2));
+            }
+        });
+        
+        // Update cart items count
+        $('.card-header:contains("Cart Items")').text('Cart Items (' + totalItems + ')');
+    }
+    
+    function showToast(message, type) {
+        // Simple toast notification
+        var toast = $('<div class="alert alert-' + type + ' position-fixed top-0 end-0 m-3" style="z-index: 9999;">' + message + '</div>');
+        $('body').append(toast);
+        setTimeout(function() {
+            toast.fadeOut(function() {
+                toast.remove();
+            });
+        }, 3000);
     }
     
     function removeFromCart(productId) {
