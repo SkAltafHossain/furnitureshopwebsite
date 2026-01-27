@@ -20,56 +20,66 @@
                                 $product = \App\Models\Product::find($productId);
                                 if (!$product) continue;
                             @endphp
-                            <div class="cart-item d-flex align-items-center mb-3 pb-3 border-bottom">
-                                <!-- Product Image -->
-                                <div class="me-3">
-                                    @if($product->image)
-                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" style="width: 80px; height: 80px; object-fit: cover;" class="rounded">
-                                    @else
-                                        <div class="bg-light d-flex align-items-center justify-content-center rounded" style="width: 80px; height: 80px;">
-                                            <i class="fas fa-box fa-2x text-muted"></i>
+                            <div class="cart-item desktop-cart-item mb-4 p-4 border rounded-3 shadow-sm">
+                                <div class="row align-items-center g-4">
+                                    <!-- Product Image -->
+                                    <div class="col-auto">
+                                        <div class="product-image-container">
+                                            @if($product->image)
+                                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="rounded-3 product-image">
+                                            @else
+                                                <div class="bg-light d-flex align-items-center justify-content-center rounded-3 product-image">
+                                                    <i class="fas fa-box fa-3x text-muted"></i>
+                                                </div>
+                                            @endif
                                         </div>
-                                    @endif
-                                </div>
-                                
-                                <!-- Product Details -->
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">
-                                        <a href="{{ route('products.show', $product->slug) }}" class="text-decoration-none text-dark">
-                                            {{ $product->name }}
-                                        </a>
-                                    </h6>
-                                    <p class="text-muted mb-1 small">{{ $product->category->name ?? 'Uncategorized' }}</p>
-                                    <div class="d-flex align-items-center">
-                                        <span class="text-primary fw-bold">₹{{ number_format($product->price, 2) }}</span>
-                                        @if($product->discount_price)
-                                            <span class="text-muted text-decoration-line-through ms-2 small">₹{{ number_format($product->discount_price, 2) }}</span>
-                                        @endif
                                     </div>
-                                </div>
-                                
-                                <!-- Quantity Controls -->
-                                <div class="me-3">
-                                    <div class="quantity-controls d-flex align-items-center border rounded" style="width: 140px;">
-                                        <button class="btn btn-link quantity-decrease p-2 text-decoration-none" type="button" data-product-id="{{ $productId }}">
-                                            <i class="fas fa-minus text-muted"></i>
-                                        </button>
-                                        <input type="number" class="form-control border-0 text-center quantity-input fw-bold" value="{{ $item['quantity'] }}" min="1" max="{{ $product->stock }}" data-product-id="{{ $productId }}" style="background: transparent; cursor: default;" readonly>
-                                        <button class="btn btn-link quantity-increase p-2 text-decoration-none" type="button" data-product-id="{{ $productId }}">
-                                            <i class="fas fa-plus text-muted"></i>
+                                    
+                                    <!-- Product Details -->
+                                    <div class="col">
+                                        <h6 class="product-title mb-2">
+                                            <a href="{{ route('products.show', $product->slug) }}" class="text-decoration-none text-dark">
+                                                {{ $product->name }}
+                                            </a>
+                                        </h6>
+                                        <p class="product-category text-muted mb-2">{{ $product->category->name ?? 'Uncategorized' }}</p>
+                                        <div class="product-price">
+                                            <span class="current-price fw-bold text-primary fs-5">₹{{ number_format($product->price, 2) }}</span>
+                                            @if($product->discount_price)
+                                                <span class="original-price text-muted text-decoration-line-through ms-3">₹{{ number_format($product->discount_price, 2) }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quantity Controls -->
+                                    <div class="col-auto">
+                                        <div class="text-center">
+                                            <label class="form-label small text-muted mb-2 d-block">Quantity</label>
+                                            <div class="quantity-controls d-flex align-items-center border rounded-3 overflow-hidden">
+                                                <button class="btn quantity-btn quantity-decrease" type="button" data-product-id="{{ $productId }}">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <input type="number" class="form-control border-0 text-center quantity-input fw-bold" value="{{ $item['quantity'] }}" min="1" max="{{ $product->stock }}" data-product-id="{{ $productId }}" readonly>
+                                                <button class="btn quantity-btn quantity-increase" type="button" data-product-id="{{ $productId }}">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            @if($product->stock <= 5)
+                                                <small class="text-warning d-block mt-2">
+                                                    <i class="fas fa-exclamation-triangle"></i> Only {{ $product->stock }} left
+                                                </small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Item Total & Remove -->
+                                    <div class="col-auto text-end">
+                                        <label class="form-label small text-muted mb-2 d-block">Total</label>
+                                        <div class="item-total fw-bold text-success fs-4 mb-3">₹{{ number_format($product->price * $item['quantity'], 2) }}</div>
+                                        <button class="btn btn-outline-danger remove-item" data-product-id="{{ $productId }}">
+                                            <i class="fas fa-trash-alt"></i> Remove
                                         </button>
                                     </div>
-                                    @if($product->stock <= 5)
-                                        <small class="text-danger">Only {{ $product->stock }} left</small>
-                                    @endif
-                                </div>
-                                
-                                <!-- Item Total & Remove -->
-                                <div class="text-end">
-                                    <div class="fw-bold mb-2">₹{{ number_format($product->price * $item['quantity'], 2) }}</div>
-                                    <button class="btn btn-sm btn-outline-danger remove-item" data-product-id="{{ $productId }}">
-                                        <i class="fas fa-trash"></i> Remove
-                                    </button>
                                 </div>
                             </div>
                         @endforeach
@@ -159,19 +169,91 @@
 
 @push('styles')
 <style>
+/* Cart Item Styles */
+.cart-item {
+    background: white;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef !important;
+}
+
+.cart-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    border-color: #0d6efd !important;
+}
+
+.product-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-image:hover {
+    transform: scale(1.05);
+}
+
+.product-title {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #2c3e50;
+}
+
+.product-category {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.current-price {
+    font-size: 1.1rem;
+}
+
+.original-price {
+    font-size: 0.9rem;
+}
+
+/* Quantity Controls */
 .quantity-controls {
     background: #f8f9fa;
+    border: 2px solid #e9ecef !important;
     transition: all 0.3s ease;
+    height: 44px;
 }
 
 .quantity-controls:hover {
     background: #e9ecef;
-    border-color: #dee2e6;
+    border-color: #0d6efd !important;
 }
 
-.quantity-controls .quantity-input {
+.quantity-btn {
+    padding: 0 12px !important;
+    background: transparent;
+    border: none;
+    color: #6c757d;
+    transition: all 0.2s ease;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quantity-btn:hover {
+    background: #0d6efd;
+    color: white;
+}
+
+.quantity-btn:active {
+    transform: scale(0.9);
+}
+
+.quantity-input {
     font-size: 16px;
+    font-weight: 700;
     color: #495057;
+    background: transparent;
+    border: none;
+    text-align: center;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -179,22 +261,550 @@
     pointer-events: none;
 }
 
-.quantity-controls .quantity-input:focus {
+.quantity-input:focus {
     outline: none;
     box-shadow: none;
 }
 
-.quantity-controls .btn-link:hover {
-    background: rgba(0,0,0,0.05);
-    border-radius: 4px;
+.item-total {
+    font-size: 1.2rem;
 }
 
-.quantity-controls .btn-link:hover i {
-    color: #007bff !important;
+/* Desktop Styles */
+@media (min-width: 769px) {
+    .desktop-cart-item {
+        border-radius: 16px !important;
+        background: white;
+        border: 1px solid #e9ecef !important;
+        transition: all 0.3s ease;
+    }
+    
+    .desktop-cart-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
+        border-color: #0d6efd !important;
+    }
+    
+    .product-image {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 2px solid #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    .product-image:hover {
+        transform: scale(1.05);
+        border-color: #0d6efd;
+        box-shadow: 0 8px 25px rgba(13, 110, 253, 0.2);
+    }
+    
+    .product-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        line-height: 1.4;
+        color: #2c3e50;
+        transition: color 0.3s ease;
+    }
+    
+    .product-title:hover {
+        color: #0d6efd;
+    }
+    
+    .product-category {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .current-price {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #0d6efd;
+        text-shadow: 0 1px 2px rgba(13, 110, 253, 0.1);
+    }
+    
+    .original-price {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #9ca3af;
+    }
+    
+    .quantity-controls {
+        width: 160px !important;
+        height: 48px;
+        background: #f8f9fa;
+        border: 2px solid #e9ecef !important;
+        border-radius: 12px !important;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .quantity-controls:hover {
+        background: #fff;
+        border-color: #0d6efd !important;
+        box-shadow: 0 4px 15px rgba(13, 110, 253, 0.15);
+        transform: translateY(-1px);
+    }
+    
+    .quantity-btn {
+        padding: 0 16px !important;
+        background: transparent;
+        border: none;
+        color: #6c757d;
+        transition: all 0.2s ease;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .quantity-btn:hover {
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    .quantity-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .quantity-input {
+        font-size: 18px;
+        font-weight: 800;
+        color: #2c3e50;
+        background: transparent;
+        border: none;
+        text-align: center;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        pointer-events: none;
+        letter-spacing: 1px;
+    }
+    
+    .quantity-input:focus {
+        outline: none;
+        box-shadow: none;
+    }
+    
+    .item-total {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #28a745;
+        text-shadow: 0 1px 2px rgba(40, 167, 69, 0.1);
+        letter-spacing: 0.5px;
+    }
+    
+    .form-label {
+        font-size: 0.85rem !important;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6c757d;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .btn-outline-danger {
+        border: 2px solid #dc3545;
+        color: #dc3545;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .btn-outline-danger:hover {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+    }
+    
+    /* Desktop Card Improvements */
+    .card {
+        border: none !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+        border-radius: 20px !important;
+        background: white;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 2px solid #e9ecef !important;
+        padding: 1.5rem !important;
+        border-radius: 20px 20px 0 0 !important;
+    }
+    
+    .card-header h5 {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #2c3e50;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0;
+    }
+    
+    .card-body {
+        padding: 2rem !important;
+    }
+    
+    /* Desktop Continue Shopping Button */
+    .btn-outline-primary {
+        border: 2px solid #0d6efd;
+        color: #0d6efd;
+        font-weight: 700;
+        padding: 12px 30px;
+        border-radius: 12px;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(13, 110, 253, 0.3);
+    }
+    
+    /* Desktop Cart Summary */
+    .col-md-4 .card {
+        border-radius: 20px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+    }
+    
+    .col-md-4 .card .card-body {
+        padding: 2rem !important;
+    }
+    
+    .col-md-4 .card .d-flex.justify-content-between {
+        font-size: 1rem;
+        margin-bottom: 1rem !important;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .col-md-4 .card .d-flex.justify-content-between:last-of-type {
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .col-md-4 .card h5 {
+        font-size: 1.2rem !important;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .col-md-4 .card .btn {
+        font-size: 1rem;
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        height: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .col-md-4 .card .small {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    /* Desktop Promo Code */
+    .col-md-4 .card:last-child .d-flex {
+        flex-direction: row;
+        gap: 0.75rem;
+    }
+    
+    .col-md-4 .card:last-child .form-control {
+        margin-right: 0 !important;
+        margin-bottom: 0 !important;
+        height: 48px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        border: 2px solid #e9ecef;
+        font-weight: 500;
+    }
+    
+    .col-md-4 .card:last-child .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .col-md-4 .card:last-child .btn {
+        width: auto;
+        height: 48px;
+        min-width: 120px;
+    }
 }
 
-.quantity-controls .btn-link:active {
-    transform: scale(0.95);
+/* Tablet Styles */
+@media (max-width: 768px) {
+    .cart-item {
+        margin-bottom: 1.5rem !important;
+        padding: 1.25rem !important;
+        border-radius: 16px !important;
+    }
+    
+    .product-image {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .product-title {
+        font-size: 0.95rem;
+        line-height: 1.3;
+    }
+    
+    .product-category {
+        font-size: 0.8rem;
+    }
+    
+    .current-price {
+        font-size: 1rem;
+    }
+    
+    .original-price {
+        font-size: 0.85rem;
+    }
+    
+    .quantity-controls {
+        height: 40px;
+    }
+    
+    .quantity-btn {
+        padding: 0 10px !important;
+        font-size: 0.9rem;
+    }
+    
+    .quantity-input {
+        font-size: 14px;
+    }
+    
+    .item-total {
+        font-size: 1.1rem;
+    }
+    
+    .form-label {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+        border-radius: 20px !important;
+        margin-bottom: 1rem;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-bottom: 1px solid #e9ecef !important;
+        padding: 1rem !important;
+        border-radius: 20px 20px 0 0 !important;
+    }
+    
+    .card-header h5 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .card-body {
+        padding: 1rem !important;
+    }
+    
+    .cart-item {
+        margin-bottom: 1.25rem !important;
+        padding: 1rem !important;
+        border-radius: 16px !important;
+        border: 1px solid #f0f0f0 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+    
+    .cart-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+    }
+    
+    .product-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px !important;
+    }
+    
+    .product-title {
+        font-size: 0.9rem;
+        line-height: 1.3;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .product-category {
+        font-size: 0.75rem;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .current-price {
+        font-size: 0.95rem;
+    }
+    
+    .original-price {
+        font-size: 0.8rem;
+    }
+    
+    .quantity-controls {
+        width: 100% !important;
+        height: 44px;
+        border-radius: 12px !important;
+        border: 2px solid #e9ecef !important;
+    }
+    
+    .quantity-btn {
+        padding: 0 14px !important;
+        font-size: 0.85rem;
+    }
+    
+    .quantity-input {
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    .item-total {
+        font-size: 1rem;
+    }
+    
+    .form-label {
+        font-size: 0.75rem !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    
+    /* Cart Summary Mobile Styles */
+    .col-md-4 .card {
+        margin-top: 1.5rem;
+        border-radius: 20px !important;
+    }
+    
+    .col-md-4 .card .card-body {
+        padding: 1.25rem !important;
+    }
+    
+    .col-md-4 .card .d-flex.justify-content-between {
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem !important;
+        padding: 0.5rem 0;
+    }
+    
+    .col-md-4 .card h5 {
+        font-size: 1rem !important;
+        font-weight: 700;
+    }
+    
+    .col-md-4 .card .btn {
+        font-size: 0.85rem;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .col-md-4 .card .small {
+        font-size: 0.75rem;
+    }
+    
+    /* Promo Code Mobile */
+    .col-md-4 .card:last-child .d-flex {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .col-md-4 .card:last-child .form-control {
+        margin-right: 0 !important;
+        margin-bottom: 0 !important;
+        height: 44px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+    }
+    
+    .col-md-4 .card:last-child .btn {
+        width: 100%;
+        height: 44px;
+    }
+    
+    /* Continue Shopping Button */
+    .btn-outline-primary {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 375px) {
+    .cart-item {
+        padding: 0.875rem !important;
+    }
+    
+    .product-image {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .product-title {
+        font-size: 0.85rem;
+    }
+    
+    .current-price {
+        font-size: 0.9rem;
+    }
+    
+    .quantity-controls {
+        height: 40px;
+    }
+    
+    .quantity-btn {
+        padding: 0 12px !important;
+        font-size: 0.8rem;
+    }
+    
+    .item-total {
+        font-size: 0.95rem;
+    }
 }
 </style>
 @endpush
