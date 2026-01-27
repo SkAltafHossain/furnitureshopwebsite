@@ -287,7 +287,15 @@ function addToCart(productId, quantity = 1) {
         },
         success: function(response) {
             // Update cart count
-            $('.action-badge').text(response.cart_count);
+            var cartBadge = $('.action-badge');
+            cartBadge.text(response.cart_count);
+            
+            // Show badge if cart has items, hide if empty
+            if (response.cart_count > 0) {
+                cartBadge.show();
+            } else {
+                cartBadge.hide();
+            }
             
             // Show success message
             showToast(response.message, 'success');

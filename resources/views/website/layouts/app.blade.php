@@ -83,8 +83,12 @@
                             <i class="fas fa-shopping-bag"></i>
                             Cart
                             @if(session('cart'))
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                <span class="action-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
                                     {{ count(session('cart')) }}
+                                </span>
+                            @else
+                                <span class="action-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; display: none;">
+                                    0
                                 </span>
                             @endif
                         </a>
@@ -92,6 +96,9 @@
                         <button class="btn btn-outline-primary position-relative" onclick="$('#loginModal').modal('show');">
                             <i class="fas fa-shopping-bag"></i>
                             Cart
+                            <span class="action-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; display: none;">
+                                0
+                            </span>
                         </button>
                     @endif
                 </div>

@@ -209,8 +209,7 @@ function handleAddToCart(productId) {
     // Check if user is authenticated using global variable
     if (window.isAuthenticated) {
         // User is logged in - proceed with add to cart
-        console.log('Add to cart:', productId);
-        // Add your actual add to cart logic here
+        addToCart(productId, 1);
     } else {
         // User is not logged in - show login modal
         $('#loginModal').modal('show');
@@ -220,9 +219,42 @@ function handleAddToCart(productId) {
 function buyNow(productId) {
     // Check if user is authenticated using global variable
     if (window.isAuthenticated) {
-        // User is logged in - proceed with buy now
-        console.log('Buy now:', productId);
-        // Add your actual buy now logic here
+        // User is logged in - add to cart and redirect to checkout
+        $.ajax({
+            url: cartUrls.add,
+            method: 'POST',
+            data: {
+                product_id: productId,
+                quantity: 1,
+                _token: csrfToken
+            },
+            success: function(response) {
+                // Update cart count
+                var cartBadge = $('.action-badge');
+                cartBadge.text(response.cart_count);
+                
+                // Show badge if cart has items, hide if empty
+                if (response.cart_count > 0) {
+                    cartBadge.show();
+                } else {
+                    cartBadge.hide();
+                }
+                
+                // Show success message
+                showToast(response.message, 'success');
+                // Redirect to checkout after a short delay
+                setTimeout(function() {
+                    window.location.href = '{{ route("checkout.index") }}';
+                }, 1000);
+            },
+            error: function(xhr) {
+                var message = 'Error occurred while adding product to cart.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                showToast(message, 'error');
+            }
+        });
     } else {
         // User is not logged in - show login modal
         $('#loginModal').modal('show');
