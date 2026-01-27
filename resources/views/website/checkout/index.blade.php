@@ -7,6 +7,19 @@
     <h1 class="mb-4">Checkout</h1>
     
     @forelse($cart as $productId => $item)
+        <!-- Cart items will be processed in the form -->
+    @empty
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+            <h3>Your cart is empty</h3>
+            <p class="text-muted">Add products to your cart before proceeding to checkout.</p>
+            <a href="{{ route('products.index') }}" class="btn btn-primary">
+                <i class="fas fa-shopping-bag"></i> Start Shopping
+            </a>
+        </div>
+    @endforelse
+    
+    @if(!empty($cart))
         <form method="POST" action="{{ route('checkout.process') }}">
             @csrf
             <div class="row">
@@ -69,10 +82,82 @@
                             
                             <div class="mb-3">
                                 <label class="form-label">Delivery Address</label>
-                                <textarea class="form-control" name="address" rows="3" required>{{ old('address') }}</textarea>
-                                @error('address')
-                                    <div class="text-danger small">{{ $message }}</div>
-                                @enderror
+                                
+                                @if(auth()->check())
+                                    <!-- Always show address selection for logged-in users -->
+                                    <div class="mb-3">
+                                        @if($addresses->count() > 0)
+                                            <!-- Saved Addresses -->
+                                            <div class="form-check-group">
+                                                @foreach($addresses as $address)
+                                                    <div class="form-check mb-2 p-3 border rounded {{ $address->is_default ? 'border-primary' : '' }}">
+                                                        <div class="d-flex">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="radio" name="address_id" 
+                                                                       id="address_{{ $address->id }}" value="{{ $address->id }}"
+                                                                       {{ $address->is_default ? 'checked' : ''}}>
+                                                                <label class="form-check-label w-100" for="address_{{ $address->id }}">
+                                                                    <div class="d-flex justify-content-between align-items-start">
+                                                                        <div>
+                                                                            <strong class="text-capitalize">{{ $address->type }}</strong>
+                                                                            @if($address->is_default)
+                                                                                <span class="badge bg-primary ms-2">Default</span>
+                                                                            @endif
+                                                                            <div class="small text-muted mt-1">
+                                                                                {{ $address->full_address }}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            
+                                            <!-- New Address Option -->
+                                            <div class="form-check mb-2 p-3 border rounded">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="address_id" 
+                                                           id="new_address" value="">
+                                                    <label class="form-check-label w-100" for="new_address">
+                                                        <strong>Add New Address</strong>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Manual Address Input (Hidden by default, shown when new address is selected) -->
+                                            <div id="manualAddressInput" style="display: none;" class="mt-3">
+                                                <textarea class="form-control" name="address" rows="3" placeholder="Enter your complete delivery address">{{ old('address') }}</textarea>
+                                                @error('address')
+                                                    <div class="text-danger small">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        @else
+                                            <!-- No saved addresses - show only Add New Address button -->
+                                            <div class="text-center py-4">
+                                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                                                    <i class="fas fa-plus me-2"></i>Add New Address
+                                                </button>
+                                                <p class="text-muted small mt-2">Add a delivery address to continue</p>
+                                            </div>
+                                            
+                                            <!-- Hidden manual address input as fallback -->
+                                            <div id="manualAddressInput" style="display: none;" class="mt-3">
+                                                <textarea class="form-control" name="address" rows="3" placeholder="Enter your complete delivery address">{{ old('address') }}</textarea>
+                                                @error('address')
+                                                    <div class="text-danger small">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        @endif
+                                    </div>
+                                @else
+                                    <!-- Single Address Input for guests -->
+                                    <textarea class="form-control" name="address" rows="3" placeholder="Enter your complete delivery address">{{ old('address') }}</textarea>
+                                    @error('address')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -178,26 +263,32 @@
                 </div>
             </div>
         </form>
-    @empty
-        <div class="text-center py-5">
-            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-            <h3>Your cart is empty</h3>
-            <p class="text-muted">Add products to your cart before proceeding to checkout.</p>
-            <a href="{{ route('products.index') }}" class="btn btn-primary">
-                <i class="fas fa-shopping-bag"></i> Start Shopping
-            </a>
-        </div>
-    @endforelse
+    @endif
 </div>
 @endsection
+
+<!-- Add Address Modal Component -->
+@include('components.address-modal')
 
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Form validation
-    $('form').submit(function(e) {
+    // Handle address selection toggle
+    $('input[name="address_id"]').change(function() {
+        if ($(this).val() === '') {
+            // Show manual address input when "Add New Address" is selected
+            $('#manualAddressInput').show();
+        } else {
+            // Hide manual address input when saved address is selected
+            $('#manualAddressInput').hide();
+        }
+    });
+    
+    // Form validation for checkout
+    $('form[action="{{ route("checkout.process") }}"]').submit(function(e) {
         var phone = $('input[name="phone"]').val();
-        var address = $('textarea[name="address"]').val();
+        var addressSelected = $('input[name="address_id"]:checked').val();
+        var customAddress = $('textarea[name="address"]').val();
         
         // Basic phone validation
         if (phone.replace(/\D/g, '').length < 10) {
@@ -207,10 +298,25 @@ $(document).ready(function() {
         }
         
         // Address validation
-        if (address.trim().length < 10) {
-            e.preventDefault();
-            showToast('Please enter a complete delivery address', 'error');
-            return false;
+        if (auth()->check()) {
+            // For logged-in users, check if either saved address is selected or manual address is entered
+            if (addressSelected === undefined) {
+                e.preventDefault();
+                showToast('Please select a delivery address', 'error');
+                return false;
+            }
+            if (addressSelected === '' && !customAddress) {
+                e.preventDefault();
+                showToast('Please enter a delivery address', 'error');
+                return false;
+            }
+        } else {
+            // For guests, check if manual address is entered
+            if (!customAddress) {
+                e.preventDefault();
+                showToast('Please enter a delivery address', 'error');
+                return false;
+            }
         }
         
         // Disable submit button to prevent double submission

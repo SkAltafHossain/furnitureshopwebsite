@@ -507,39 +507,7 @@
             $(this).find('.alert').remove();
         });
         
-        // Toast notification function - positioned at bottom
-        function showToast(message, type) {
-            var toastClass = type === 'success' ? 'bg-success' : 'bg-danger';
-            var iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-            var title = type === 'success' ? 'Success' : 'Error';
-            
-            // Remove existing toasts
-            $('.custom-toast').remove();
-            
-            var toast = `
-                <div class="custom-toast position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-                    <div class="toast show align-items-center text-white ${toastClass} border-0" role="alert">
-                        <div class="d-flex">
-                            <div class="toast-body">
-                                <i class="fas ${iconClass} me-2"></i>
-                                <strong>${title}:</strong> ${message}
-                            </div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            $('body').append(toast);
-            
-            // Auto-remove after 4 seconds
-            setTimeout(function() {
-                $('.custom-toast').fadeOut(500, function() {
-                    $(this).remove();
-                });
-            }, 4000);
-        }
-        
+                
         // Show validation errors in a more elegant way
         function showValidationErrors(errors) {
             var errorHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">';

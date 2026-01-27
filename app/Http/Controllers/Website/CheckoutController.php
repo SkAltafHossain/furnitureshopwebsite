@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Address;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -20,7 +21,12 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
         }
         
-        return view('website.checkout.index', compact('cart'));
+        $addresses = [];
+        if (auth()->check()) {
+            $addresses = auth()->user()->addresses()->orderBy('is_default', 'desc')->get();
+        }
+        
+        return view('website.checkout.index', compact('cart', 'addresses'));
     }
     
     public function process(Request $request)
@@ -29,7 +35,8 @@ class CheckoutController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:500',
+            'address_id' => 'nullable|exists:addresses,id',
+            'address' => 'required_without:address_id|string|max:500',
             'payment_method' => 'required|in:cod,online'
         ]);
         
@@ -41,6 +48,15 @@ class CheckoutController extends Controller
         
         if (empty($cart)) {
             return back()->with('error', 'Your cart is empty');
+        }
+        
+        // Get address
+        $address = null;
+        if ($request->address_id) {
+            $address = Address::find($request->address_id);
+            if (!$address || $address->user_id !== auth()->id()) {
+                return back()->with('error', 'Invalid address selected');
+            }
         }
         
         DB::beginTransaction();
@@ -62,7 +78,7 @@ class CheckoutController extends Controller
                 'customer_name' => $request->name,
                 'customer_email' => $request->email,
                 'customer_phone' => $request->phone,
-                'customer_address' => $request->address,
+                'customer_address' => $address ? $address->full_address : $request->address,
                 'total_amount' => $total,
                 'payment_method' => $request->payment_method,
                 'order_status' => 'pending',
@@ -94,6 +110,42 @@ class CheckoutController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to place order. Please try again.');
+        }
+    }
+    
+    public function storeAddress(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'type' => 'required|in:home,office,other',
+            'address_line1' => 'required|string|max:255',
+            'address_line2' => 'nullable|string|max:255',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|max:100',
+            'postal_code' => 'required|string|max:20',
+            'country' => 'required|string|max:100',
+            'is_default' => 'boolean'
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+        
+        try {
+            // If setting as default, unset other default addresses
+            if ($request->is_default) {
+                auth()->user()->addresses()->update(['is_default' => false]);
+            }
+            
+            $address = auth()->user()->addresses()->create($request->all());
+            
+            return response()->json([
+                'success' => true, 
+                'address' => $address,
+                'message' => 'Address added successfully!'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to add address'], 500);
         }
     }
 }

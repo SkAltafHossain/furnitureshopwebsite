@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/my-account', [App\Http\Controllers\Website\AccountController::class, 'update'])->name('account.update');
     Route::get('/my-orders', [App\Http\Controllers\Website\AccountController::class, 'orders'])->name('account.orders');
     Route::get('/my-orders/{id}', [App\Http\Controllers\Website\AccountController::class, 'orderDetails'])->name('account.order-details');
+    Route::post('/addresses', [App\Http\Controllers\Website\CheckoutController::class, 'storeAddress'])->name('addresses.store');
 });
 
 // Static Pages
