@@ -26,7 +26,7 @@
                         <a href="{{ route('account.orders') }}" class="nav-link">
                             <i class="fas fa-shopping-bag me-2"></i> My Orders
                         </a>
-                        <a href="{{ route('account.orders') }}" class="nav-link">
+                        <a href="{{ route('account.addresses') }}" class="nav-link">
                             <i class="fas fa-map-marker-alt me-2"></i> Addresses
                         </a>
                         <a href="#" class="nav-link">
@@ -92,11 +92,28 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Save Changes
                             </button>
-                            <a href="#" class="btn btn-outline-secondary">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                                 <i class="fas fa-lock"></i> Change Password
-                            </a>
+                            </button>
                         </div>
                     </form>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-3 flex-wrap">
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                            <i class="fas fa-plus me-2"></i>Add New Address
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            <i class="fas fa-lock me-2"></i>Change Password
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -130,6 +147,63 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Address Modal Component -->
+@include('components.address-modal')
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="changePasswordModalLabel">
+                    <i class="fas fa-lock me-2"></i>Change Password
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ route('account.change-password') }}">
+                @csrf
+                @method('PUT')
+                <div class="modal-body p-4">
+                    <div class="mb-4">
+                        <label for="current_password" class="form-label fw-semibold">Current Password</label>
+                        <input type="password" class="form-control form-control-lg @error('current_password') is-invalid @enderror" 
+                               id="current_password" name="current_password" required>
+                        @error('current_password')
+                            <div class="invalid-feedback mt-2">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">New Password</label>
+                        <input type="password" class="form-control form-control-lg @error('password') is-invalid @enderror" 
+                               id="password" name="password" required>
+                        @error('password')
+                            <div class="invalid-feedback mt-2">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label for="password_confirmation" class="form-label fw-semibold">Confirm New Password</label>
+                        <input type="password" class="form-control form-control-lg @error('password_confirmation') is-invalid @enderror" 
+                               id="password_confirmation" name="password_confirmation" required>
+                        @error('password_confirmation')
+                            <div class="invalid-feedback mt-2">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-4">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary btn-lg px-5" style="min-height: 48px;" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-lg px-5" style="min-height: 48px;">
+                            <i class="fas fa-save me-2"></i>Change Password
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>

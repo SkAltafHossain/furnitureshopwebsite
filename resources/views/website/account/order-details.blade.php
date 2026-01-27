@@ -33,7 +33,7 @@
                         <a href="{{ route('account.orders') }}" class="nav-link active">
                             <i class="fas fa-shopping-bag me-2"></i> My Orders
                         </a>
-                        <a href="#" class="nav-link">
+                        <a href="{{ route('account.addresses') }}" class="nav-link">
                             <i class="fas fa-map-marker-alt me-2"></i> Addresses
                         </a>
                         <a href="#" class="nav-link">

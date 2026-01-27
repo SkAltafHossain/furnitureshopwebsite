@@ -22,11 +22,13 @@ class CheckoutController extends Controller
         }
         
         $addresses = [];
+        $allAddresses = [];
         if (auth()->check()) {
-            $addresses = auth()->user()->addresses()->orderBy('is_default', 'desc')->get();
+            $allAddresses = auth()->user()->addresses()->orderBy('is_default', 'desc')->get();
+            $addresses = $allAddresses->take(3);
         }
         
-        return view('website.checkout.index', compact('cart', 'addresses'));
+        return view('website.checkout.index', compact('cart', 'addresses', 'allAddresses'));
     }
     
     public function process(Request $request)
@@ -115,6 +117,9 @@ class CheckoutController extends Controller
     
     public function storeAddress(Request $request)
     {
+        // Debug: Log incoming request data
+        \Log::info('Address request data:', $request->all());
+        
         $validator = Validator::make($request->all(), [
             'type' => 'required|in:home,office,other',
             'address_line1' => 'required|string|max:255',
@@ -123,20 +128,37 @@ class CheckoutController extends Controller
             'state' => 'required|string|max:100',
             'postal_code' => 'required|string|max:20',
             'country' => 'required|string|max:100',
-            'is_default' => 'boolean'
+            'is_default' => 'nullable|boolean'
+        ]);
+        
+        // Convert is_default to proper boolean
+        $request->merge([
+            'is_default' => filter_var($request->input('is_default'), FILTER_VALIDATE_BOOLEAN)
         ]);
         
         if ($validator->fails()) {
+            // Debug: Log validation errors
+            \Log::error('Address validation errors:', $validator->errors()->toArray());
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
         
         try {
+            // Convert is_default to proper boolean
+            $isDefault = filter_var($request->input('is_default'), FILTER_VALIDATE_BOOLEAN);
+            
+            \Log::info('Address creation - is_default value:', ['is_default' => $isDefault, 'original' => $request->input('is_default')]);
+            
             // If setting as default, unset other default addresses
-            if ($request->is_default) {
-                auth()->user()->addresses()->update(['is_default' => false]);
+            if ($isDefault) {
+                $unsetCount = auth()->user()->addresses()->where('is_default', true)->update(['is_default' => false]);
+                \Log::info('Unset default addresses count:', ['count' => $unsetCount]);
             }
             
+            $request->merge(['is_default' => $isDefault]);
+            
             $address = auth()->user()->addresses()->create($request->all());
+            
+            \Log::info('Address created:', ['address_id' => $address->id, 'is_default' => $address->is_default]);
             
             return response()->json([
                 'success' => true, 
@@ -145,6 +167,7 @@ class CheckoutController extends Controller
             ]);
             
         } catch (\Exception $e) {
+            \Log::error('Address creation error:', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'Failed to add address'], 500);
         }
     }

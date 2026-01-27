@@ -26,6 +26,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [App\Http\Controllers\Website\AuthController::class, 'logout'])->name('logout');
     Route::get('/my-account', [App\Http\Controllers\Website\AccountController::class, 'index'])->name('account.index');
     Route::put('/my-account', [App\Http\Controllers\Website\AccountController::class, 'update'])->name('account.update');
+    Route::put('/change-password', [App\Http\Controllers\Website\AccountController::class, 'changePassword'])->name('account.change-password');
+    Route::get('/my-addresses', [App\Http\Controllers\Website\AccountController::class, 'addresses'])->name('account.addresses');
+    Route::delete('/addresses/{id}', [App\Http\Controllers\Website\AccountController::class, 'deleteAddress'])->name('account.delete-address');
+    Route::patch('/addresses/{id}/set-default', [App\Http\Controllers\Website\AccountController::class, 'setDefaultAddress'])->name('account.set-default-address');
     Route::get('/my-orders', [App\Http\Controllers\Website\AccountController::class, 'orders'])->name('account.orders');
     Route::get('/my-orders/{id}', [App\Http\Controllers\Website\AccountController::class, 'orderDetails'])->name('account.order-details');
     Route::post('/addresses', [App\Http\Controllers\Website\CheckoutController::class, 'storeAddress'])->name('addresses.store');

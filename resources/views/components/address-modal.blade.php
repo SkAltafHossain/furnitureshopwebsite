@@ -89,8 +89,12 @@ document.addEventListener('DOMContentLoaded', function() {
             state: $('#' + modalId + '_state').val(),
             postal_code: $('#' + modalId + '_postal_code').val(),
             country: $('#' + modalId + '_country').val(),
-            is_default: $('#' + modalId + '_is_default').is(':checked')
+            is_default: $('#' + modalId + '_is_default').is(':checked') ? 1 : 0
         };
+        
+        // Debug: Log form data
+        console.log('Address form data:', formData);
+        console.log('Checkbox checked:', $('#' + modalId + '_is_default').is(':checked'));
         
         // Basic validation
         if (!formData.type || !formData.address_line1 || !formData.city || !formData.state || !formData.postal_code) {

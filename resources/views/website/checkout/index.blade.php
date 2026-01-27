@@ -115,16 +115,23 @@
                                                 @endforeach
                                             </div>
                                             
-                                            <!-- New Address Option -->
-                                            <div class="form-check mb-2 p-3 border rounded">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="address_id" 
-                                                           id="new_address" value="">
-                                                    <label class="form-check-label w-100" for="new_address">
-                                                        <strong>Add New Address</strong>
-                                                    </label>
+                                            <!-- View All Addresses Option (if more than 3) -->
+                                            @if($allAddresses->count() > 3)
+                                                <div class="text-center py-2">
+                                                    <a href="{{ route('account.addresses') }}" class="btn btn-outline-secondary btn-sm">
+                                                        <i class="fas fa-list me-2"></i>View All {{ $allAddresses->count() }} Addresses
+                                                    </a>
                                                 </div>
-                                            </div>
+                                            @endif
+                                            
+                                            <!-- New Address Option (only show if less than 3 addresses) -->
+                                            @if($allAddresses->count() < 3)
+                                                <div class="text-center py-4">
+                                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                                                        <i class="fas fa-plus me-2"></i>Add New Address
+                                                    </button>
+                                                </div>
+                                            @endif
                                             
                                             <!-- Manual Address Input (Hidden by default, shown when new address is selected) -->
                                             <div id="manualAddressInput" style="display: none;" class="mt-3">
@@ -137,7 +144,7 @@
                                             <!-- No saved addresses - show only Add New Address button -->
                                             <div class="text-center py-4">
                                                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-                                                    <i class="fas fa-plus me-2"></i>Add New Address
+                                                    <i class="fas fa-plus me-2"></i>Add Your First Address
                                                 </button>
                                                 <p class="text-muted small mt-2">Add a delivery address to continue</p>
                                             </div>
