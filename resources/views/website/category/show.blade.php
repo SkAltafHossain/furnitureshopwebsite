@@ -103,38 +103,10 @@
                 <h4>Products ({{ $products->total() }})</h4>
             </div>
             
-            <div class="row">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-4">
                 @forelse($products as $product)
-                    <div class="col-md-6 col-lg-2-4 mb-4">
-                        <div class="card h-100 product-card">
-                            @if($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top" alt="{{ $product->name }}" style="height: 200px; object-fit: cover;">
-                            @else
-                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                    <i class="fas fa-box fa-3x text-muted"></i>
-                                </div>
-                            @endif
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">{{ $product->name }}</h5>
-                                <p class="card-text text-muted small">{{ Str::limit($product->description, 80) }}</p>
-                                <div class="mt-auto">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="h5 text-primary mb-0">₹{{ number_format($product->price, 2) }}</span>
-                                        @if($product->discount_price)
-                                            <span class="text-muted text-decoration-line-through">₹{{ number_format($product->discount_price, 2) }}</span>
-                                        @endif
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="badge {{ $product->stock > 0 ? 'bg-success' : 'bg-danger' }}">
-                                            {{ $product->stock > 0 ? 'In Stock' : 'Out of Stock' }}
-                                        </span>
-                                        <button class="btn btn-primary btn-sm add-to-cart" data-product-id="{{ $product->id }}" {{ $product->stock <= 0 ? 'disabled' : '' }}>
-                                            <i class="fas fa-cart-plus"></i> Add to Cart
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col mb-4">
+                        <x-product-card :product="$product" :showCategory="false" />
                     </div>
                 @empty
                     <div class="col-12 text-center py-5">

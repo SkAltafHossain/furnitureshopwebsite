@@ -41,10 +41,15 @@
             
             <!-- Price -->
             <div class="mb-3">
-                <span class="h3 text-primary">₹{{ number_format($product->price, 2) }}</span>
                 @if($product->discount_price)
-                    <span class="text-muted text-decoration-line-through ms-2">₹{{ number_format($product->discount_price, 2) }}</span>
-                    <span class="badge bg-danger ms-2">Save ₹{{ number_format($product->discount_price - $product->price, 2) }}</span>
+                    <span class="h3 text-primary">₹{{ number_format($product->discount_price, 2) }}</span>
+                    <span class="text-muted text-decoration-line-through ms-2">₹{{ number_format($product->price, 2) }}</span>
+                    @php
+                        $discountPercent = round((($product->price - $product->discount_price) / $product->price) * 100);
+                    @endphp
+                    <span class="badge bg-danger ms-2">{{ $discountPercent }}% OFF</span>
+                @else
+                    <span class="h3 text-primary">₹{{ number_format($product->price, 2) }}</span>
                 @endif
             </div>
             
@@ -182,8 +187,24 @@
                                 @endif
                                 <div class="card-body">
                                     <h6 class="card-title">{{ $relatedProduct->name }}</h6>
+                                    <div class="price-section">
+                                        <div class="d-flex align-items-center">
+                                            @if($relatedProduct->discount_price)
+                                                <span class="current-price">₹{{ number_format($relatedProduct->discount_price, 2) }}</span>
+                                                <span class="original-price">₹{{ number_format($relatedProduct->price, 2) }}</span>
+                                                @php
+                                                    $discountPercent = round((($relatedProduct->price - $relatedProduct->discount_price) / $relatedProduct->price) * 100);
+                                                @endphp
+                                                <span class="discount-badge">{{ $discountPercent }}% OFF</span>
+                                            @else
+                                                <span class="current-price">₹{{ number_format($relatedProduct->price, 2) }}</span>
+                                            @endif
+                                        </div>
+                                        <div class="mt-1">
+                                            <span class="text-success">Inclusive of all taxes</span>
+                                        </div>
+                                    </div>
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-primary">₹{{ number_format($relatedProduct->price, 2) }}</span>
                                         <a href="{{ route('products.show', $relatedProduct->slug) }}" class="btn btn-primary btn-sm">
                                             View
                                         </a>
