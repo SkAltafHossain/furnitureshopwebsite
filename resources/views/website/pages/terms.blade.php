@@ -3,7 +3,7 @@
 @section('title', 'Terms & Conditions')
 
 @section('content')
-<div class="container py-5">
+<div class="container-fluid py-5">
     <div class="row">
         <div class="col-md-8 mx-auto">
             <div class="text-center mb-5">

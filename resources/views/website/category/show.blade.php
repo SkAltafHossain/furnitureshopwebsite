@@ -3,7 +3,7 @@
 @section('title', $category->name)
 
 @section('content')
-<div class="container py-4">
+<div class="container-fluid py-5">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -32,27 +32,80 @@
     
     <!-- Products Grid -->
     <div class="row">
-        <div class="col-md-12">
+        <!-- Sidebar Filters -->
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Categories -->
+                    <div class="mb-4">
+                        <h6>Categories</h6>
+                        <div class="list-group">
+                            <a href="{{ route('products.index') }}" class="list-group-item list-group-item-action">
+                                All Products
+                            </a>
+                            @foreach($categories as $cat)
+                                <a href="{{ route('category.show', $cat->slug) }}" class="list-group-item list-group-item-action {{ $category && $category->id == $cat->id ? 'active' : '' }}">
+                                    {{ $cat->name }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                    
+                    <!-- Price Range -->
+                    <div class="mb-4">
+                        <h6>Price Range</h6>
+                        <form method="GET" action="{{ route('category.show', $category->slug) }}">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="min_price" class="form-control" placeholder="Min" value="{{ request('min_price') }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="max_price" class="form-control" placeholder="Max" value="{{ request('max_price') }}">
+                                </div>
+                            </div>
+                            @if(request('sort'))
+                                <input type="hidden" name="sort" value="{{ request('sort') }}">
+                            @endif
+                            <button type="submit" class="btn btn-outline-primary btn-sm mt-2">Apply</button>
+                        </form>
+                    </div>
+                    
+                    <!-- Sort -->
+                    <div class="mb-4">
+                        <h6>Sort By</h6>
+                        <form method="GET" action="{{ route('category.show', $category->slug) }}">
+                            @if(request('min_price'))
+                                <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                            @endif
+                            @if(request('max_price'))
+                                <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+                            @endif
+                            <select name="sort" class="form-select" onchange="this.form.submit()">
+                                <option value="">Default</option>
+                                <option value="price_low" {{ request('sort') == 'price_low' ? 'selected' : '' }}>Price: Low to High</option>
+                                <option value="price_high" {{ request('sort') == 'price_high' ? 'selected' : '' }}>Price: High to Low</option>
+                                <option value="name_asc" {{ request('sort') == 'name_asc' ? 'selected' : '' }}>Name: A to Z</option>
+                                <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>Name: Z to A</option>
+                                <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Newest First</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Products Content -->
+        <div class="col-md-10">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4>Products ({{ $products->total() }})</h4>
-                
-                <!-- Sort Options -->
-                <div class="d-flex align-items-center">
-                    <label class="me-2">Sort by:</label>
-                    <select class="form-select" onchange="window.location.href='?sort=' + this.value">
-                        <option value="">Default</option>
-                        <option value="price_low" {{ request('sort') == 'price_low' ? 'selected' : '' }}>Price: Low to High</option>
-                        <option value="price_high" {{ request('sort') == 'price_high' ? 'selected' : '' }}>Price: High to Low</option>
-                        <option value="name_asc" {{ request('sort') == 'name_asc' ? 'selected' : '' }}>Name: A to Z</option>
-                        <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>Name: Z to A</option>
-                        <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Newest First</option>
-                    </select>
-                </div>
             </div>
             
             <div class="row">
                 @forelse($products as $product)
-                    <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="col-md-6 col-lg-2-4 mb-4">
                         <div class="card h-100 product-card">
                             @if($product->image)
                                 <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top" alt="{{ $product->name }}" style="height: 200px; object-fit: cover;">
@@ -63,7 +116,7 @@
                             @endif
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">{{ $product->name }}</h5>
-                                <p class="card-text text-muted small">{{ Str::limit($product->description, 100) }}</p>
+                                <p class="card-text text-muted small">{{ Str::limit($product->description, 80) }}</p>
                                 <div class="mt-auto">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="h5 text-primary mb-0">₹{{ number_format($product->price, 2) }}</span>
@@ -75,14 +128,9 @@
                                         <span class="badge {{ $product->stock > 0 ? 'bg-success' : 'bg-danger' }}">
                                             {{ $product->stock > 0 ? 'In Stock' : 'Out of Stock' }}
                                         </span>
-                                        <div>
-                                            <a href="{{ route('products.show', $product->slug) }}" class="btn btn-outline-primary btn-sm me-1">
-                                                <i class="fas fa-eye"></i> View
-                                            </a>
-                                            <button class="btn btn-primary btn-sm add-to-cart" data-product-id="{{ $product->id }}" {{ $product->stock <= 0 ? 'disabled' : '' }}>
-                                                <i class="fas fa-cart-plus"></i> Add
-                                            </button>
-                                        </div>
+                                        <button class="btn btn-primary btn-sm add-to-cart" data-product-id="{{ $product->id }}" {{ $product->stock <= 0 ? 'disabled' : '' }}>
+                                            <i class="fas fa-cart-plus"></i> Add to Cart
+                                        </button>
                                     </div>
                                 </div>
                             </div>

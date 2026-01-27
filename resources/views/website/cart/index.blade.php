@@ -3,7 +3,7 @@
 @section('title', 'Shopping Cart')
 
 @section('content')
-<div class="container py-4">
+<div class="container-fluid py-5">
     <h1 class="mb-4">Shopping Cart</h1>
     
     @forelse($cart as $productId => $item)

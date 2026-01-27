@@ -20,7 +20,7 @@
                                 All Products
                             </a>
                             @foreach($categories as $cat)
-                                <a href="{{ route('category.show', $cat->slug) }}" class="list-group-item list-group-item-action {{ $category && $category->id == $cat->id ? 'active' : '' }}">
+                                <a href="{{ route('products.index', ['category' => $cat->slug]) }}" class="list-group-item list-group-item-action {{ $category && $category->id == $cat->id ? 'active' : '' }}">
                                     {{ $cat->name }}
                                 </a>
                             @endforeach

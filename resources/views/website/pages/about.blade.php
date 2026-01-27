@@ -3,7 +3,7 @@
 @section('title', 'About Us')
 
 @section('content')
-<div class="container py-5">
+<div class="container-fluid py-5">
     <div class="row">
         <div class="col-md-8 mx-auto">
             <!-- Page Header -->
