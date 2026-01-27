@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Wishlist;
 
 class CategoryController extends Controller
 {
@@ -51,7 +52,15 @@ class CategoryController extends Controller
                 $query->where('status', 'active');
             })
             ->get();
+        
+        // Get user's wishlist product IDs if logged in
+        $wishlistProductIds = [];
+        if (auth()->check()) {
+            $wishlistProductIds = Wishlist::where('user_id', auth()->id())
+                                        ->pluck('product_id')
+                                        ->toArray();
+        }
             
-        return view('website.category.show', compact('category', 'products', 'categories'));
+        return view('website.category.show', compact('category', 'products', 'categories', 'wishlistProductIds'));
     }
 }

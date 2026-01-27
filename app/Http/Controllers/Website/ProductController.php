@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Wishlist;
 
 class ProductController extends Controller
 {
@@ -59,7 +60,15 @@ class ProductController extends Controller
             })
             ->get();
         
-        return view('website.products.index', compact('products', 'categories', 'category'));
+        // Get user's wishlist product IDs if logged in
+        $wishlistProductIds = [];
+        if (auth()->check()) {
+            $wishlistProductIds = Wishlist::where('user_id', auth()->id())
+                                        ->pluck('product_id')
+                                        ->toArray();
+        }
+        
+        return view('website.products.index', compact('products', 'categories', 'category', 'wishlistProductIds'));
     }
     
     public function show($slug)
@@ -71,6 +80,16 @@ class ProductController extends Controller
             ->take(4)
             ->get();
             
-        return view('website.products.show', compact('product', 'relatedProducts'));
+        // Check if product is in user's wishlist
+        $isInWishlist = false;
+        $wishlistProductIds = [];
+        if (auth()->check()) {
+            $wishlistProductIds = Wishlist::where('user_id', auth()->id())
+                                          ->pluck('product_id')
+                                          ->toArray();
+            $isInWishlist = in_array($product->id, $wishlistProductIds);
+        }
+            
+        return view('website.products.show', compact('product', 'relatedProducts', 'isInWishlist', 'wishlistProductIds'));
     }
 }

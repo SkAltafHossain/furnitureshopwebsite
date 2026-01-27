@@ -3,7 +3,9 @@
     'showAddToCart' => true,
     'showWishlist' => true,
     'showCategory' => false,
-    'showRating' => true
+    'showRating' => true,
+    'wishlistActive' => false,
+    'wishlistId' => null
 ])
 
 <div class="product-card position-relative mb-4">
@@ -20,10 +22,10 @@
     
     <!-- Wishlist Button -->
     @if($showWishlist)
-        <button class="wishlist-btn position-absolute" 
+        <button class="wishlist-btn position-absolute {{ $wishlistActive ? 'active' : '' }}" 
                 style="top: 10px; left: 10px; z-index: 10; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;"
-                onclick="toggleWishlist(this, {{ $product->id }})">
-            <i class="far fa-heart text-muted" style="font-size: 16px;"></i>
+                onclick="toggleWishlist(this, {{ $product->id }}, {{ $wishlistId ?? 'null' }})">
+            <i class="{{ $wishlistActive ? 'fas' : 'far' }} fa-heart {{ $wishlistActive ? 'text-danger' : 'text-muted' }}" style="font-size: 16px;"></i>
         </button>
     @endif
     
@@ -186,17 +188,82 @@
 window.isAuthenticated = @if(auth()->check()) true @else false @endif;
 
 // These functions should be defined in your main layout or a separate JS file
-function toggleWishlist(btn, productId) {
-    btn.classList.toggle('active');
-    const icon = btn.querySelector('i');
-    if (btn.classList.contains('active')) {
-        icon.classList.remove('far');
-        icon.classList.add('fas');
-        // Add to wishlist logic here
+function toggleWishlist(btn, productId, wishlistId = null) {
+    // Check if user is authenticated using global variable
+    if (window.isAuthenticated) {
+        // User is logged in - proceed with wishlist toggle
+        const icon = btn.querySelector('i');
+        const isCurrentlyActive = btn.classList.contains('active');
+        
+        // Show loading state
+        btn.disabled = true;
+        icon.style.opacity = '0.6';
+        
+        // Make AJAX call to toggle wishlist
+        $.ajax({
+            url: '{{ route("wishlist.toggle") }}',
+            method: 'POST',
+            data: {
+                product_id: productId,
+                _token: csrfToken
+            },
+            success: function(response) {
+                if (response.success) {
+                    if (response.action === 'added') {
+                        btn.classList.add('active');
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        icon.classList.remove('text-muted');
+                        icon.classList.add('text-danger');
+                        showToast(response.message, 'success');
+                    } else {
+                        btn.classList.remove('active');
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        icon.classList.remove('text-danger');
+                        icon.classList.add('text-muted');
+                        showToast(response.message, 'info');
+                        
+                        // If we're on the wishlist page, reload to show updated list
+                        if (window.location.href.includes('tab=wishlist')) {
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        }
+                    }
+                }
+            },
+            error: function(xhr) {
+                let message = 'Error occurred while updating wishlist.';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    message = xhr.responseJSON.error;
+                }
+                showToast(message, 'error');
+                
+                // Revert the visual state if there was an error
+                if (isCurrentlyActive && !btn.classList.contains('active')) {
+                    btn.classList.add('active');
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    icon.classList.remove('text-muted');
+                    icon.classList.add('text-danger');
+                } else if (!isCurrentlyActive && btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    icon.classList.remove('text-danger');
+                    icon.classList.add('text-muted');
+                }
+            },
+            complete: function() {
+                // Remove loading state
+                btn.disabled = false;
+                icon.style.opacity = '1';
+            }
+        });
     } else {
-        icon.classList.remove('fas');
-        icon.classList.add('far');
-        // Remove from wishlist logic here
+        // User is not logged in - show login modal
+        $('#loginModal').modal('show');
     }
 }
 

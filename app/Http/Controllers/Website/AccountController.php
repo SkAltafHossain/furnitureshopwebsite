@@ -6,13 +6,28 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Order;
+use App\Models\Wishlist;
 
 class AccountController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
-        return view('website.account.index', compact('user'));
+        $tab = $request->get('tab', 'profile');
+        
+        if ($tab === 'wishlist') {
+            $wishlistItems = Wishlist::where('user_id', auth()->id())
+                                   ->with('product')
+                                   ->latest()
+                                   ->paginate(12);
+            
+            // Get array of product IDs that are in wishlist
+            $wishlistProductIds = $wishlistItems->pluck('product_id')->toArray();
+            
+            return view('website.account.index', compact('user', 'tab', 'wishlistItems', 'wishlistProductIds'));
+        }
+        
+        return view('website.account.index', compact('user', 'tab'));
     }
 
     public function update(Request $request)
@@ -99,5 +114,16 @@ class AccountController extends Controller
             ->firstOrFail();
             
         return view('website.account.order-details', compact('order'));
+    }
+    
+    public function removeFromWishlist($id)
+    {
+        $wishlistItem = Wishlist::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+            
+        $wishlistItem->delete();
+        
+        return back()->with('success', 'Item removed from wishlist!');
     }
 }

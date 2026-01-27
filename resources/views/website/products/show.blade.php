@@ -364,40 +364,11 @@
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
                     @foreach($relatedProducts as $relatedProduct)
                         <div class="col mb-4">
-                            <div class="card h-100 related-product-card">
-                                @if($relatedProduct->image)
-                                    <img src="{{ asset('storage/' . $relatedProduct->image) }}" 
-                                         class="card-img-top" 
-                                         alt="{{ $relatedProduct->name }}" 
-                                         style="height: 200px; object-fit: cover;">
-                                @else
-                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                        <i class="fas fa-box fa-3x text-muted"></i>
-                                    </div>
-                                @endif
-                                <div class="card-body">
-                                    <h6 class="card-title mb-2">{{ Str::limit($relatedProduct->name, 40) }}</h6>
-                                    <div class="price-section mb-2">
-                                        <div class="d-flex align-items-center">
-                                            @if($relatedProduct->discount_price)
-                                                <span class="current-price fw-bold text-primary">₹{{ number_format($relatedProduct->discount_price, 2) }}</span>
-                                                <span class="original-price text-muted text-decoration-line-through ms-2 small">₹{{ number_format($relatedProduct->price, 2) }}</span>
-                                            @else
-                                                <span class="current-price fw-bold text-primary">₹{{ number_format($relatedProduct->price, 2) }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="stock-status small {{ $relatedProduct->stock > 0 ? 'text-success' : 'text-danger' }}">
-                                            {{ $relatedProduct->stock > 0 ? 'In Stock' : 'Out of Stock' }}
-                                        </span>
-                                        <a href="{{ route('products.show', $relatedProduct->slug) }}" 
-                                           class="btn btn-primary btn-sm">
-                                            <i class="fas fa-eye me-1"></i> View
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+                            <x-product-card 
+                                :product="$relatedProduct" 
+                                :showCategory="false"
+                                :wishlistActive="in_array($relatedProduct->id, $wishlistProductIds ?? [])"
+                            />
                         </div>
                     @endforeach
                 </div>

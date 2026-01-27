@@ -92,7 +92,11 @@
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
             @forelse($latestProducts as $product)
                 <div class="col mb-4">
-                    <x-product-card :product="$product" :showCategory="true" />
+                    <x-product-card 
+                        :product="$product" 
+                        :showCategory="true"
+                        :wishlistActive="in_array($product->id, $wishlistProductIds ?? [])"
+                    />
                 </div>
             @empty
                 <div class="col-12 text-center">
@@ -117,7 +121,11 @@
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
             @foreach($featuredProducts as $product)
                 <div class="col mb-4">
-                    <x-product-card :product="$product" :showCategory="true" />
+                    <x-product-card 
+                        :product="$product" 
+                        :showCategory="true"
+                        :wishlistActive="in_array($product->id, $wishlistProductIds ?? [])"
+                    />
                 </div>
             @endforeach
         </div>

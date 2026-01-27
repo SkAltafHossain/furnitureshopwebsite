@@ -33,6 +33,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-orders', [App\Http\Controllers\Website\AccountController::class, 'orders'])->name('account.orders');
     Route::get('/my-orders/{id}', [App\Http\Controllers\Website\AccountController::class, 'orderDetails'])->name('account.order-details');
     Route::post('/addresses', [App\Http\Controllers\Website\CheckoutController::class, 'storeAddress'])->name('addresses.store');
+    
+    // Wishlist Routes
+    Route::post('/wishlist/toggle', [App\Http\Controllers\WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    Route::delete('/wishlist/{id}', [App\Http\Controllers\Website\AccountController::class, 'removeFromWishlist'])->name('wishlist.remove');
 });
 
 // Static Pages

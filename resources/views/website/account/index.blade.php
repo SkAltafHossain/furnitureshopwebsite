@@ -29,7 +29,7 @@
                         <a href="{{ route('account.addresses') }}" class="nav-link">
                             <i class="fas fa-map-marker-alt me-2"></i> Addresses
                         </a>
-                        <a href="#" class="nav-link">
+                        <a href="{{ route('account.index', ['tab' => 'wishlist']) }}" class="nav-link {{ $tab ?? 'profile' === 'wishlist' ? 'active' : '' }}">
                             <i class="fas fa-heart me-2"></i> Wishlist
                         </a>
                         <a href="#" class="nav-link">
@@ -49,104 +49,152 @@
         
         <!-- Profile Information -->
         <div class="col-md-9">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Profile Information</h5>
+            @if(($tab ?? 'profile') === 'wishlist')
+                <!-- Wishlist Content -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-heart text-danger me-2"></i>
+                            My Wishlist
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if(isset($wishlistItems) && $wishlistItems->count() > 0)
+                            <div class="row">
+                                @foreach($wishlistItems as $item)
+                                    @if($item->product)
+                                        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                                            <!-- Product Card Component with active wishlist -->
+                                            <x-product-card 
+                                                :product="$item->product" 
+                                                :showAddToCart="true" 
+                                                :showWishlist="true"
+                                                :showCategory="false"
+                                                :showRating="true"
+                                                :wishlistActive="true"
+                                                :wishlistId="$item->id"
+                                            />
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+
+                            <div class="d-flex justify-content-center mt-4">
+                                {{ $wishlistItems->links() }}
+                            </div>
+                        @else
+                            <div class="text-center py-5">
+                                <i class="fas fa-heart fa-4x text-muted mb-3"></i>
+                                <h4 class="text-muted">Your wishlist is empty</h4>
+                                <p class="text-muted">Start adding products you love to your wishlist!</p>
+                                <a href="{{ route('products.index') }}" class="btn btn-primary">
+                                    <i class="fas fa-shopping-bag me-2"></i> Browse Products
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('account.update') }}">
-                        @csrf
-                        @method('PUT')
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Full Name</label>
-                                    <input type="text" class="form-control" name="name" value="{{ auth()->user()->name }}" required>
+            @else
+                <!-- Original Profile Content -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Profile Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ route('account.update') }}">
+                            @csrf
+                            @method('PUT')
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" name="name" value="{{ auth()->user()->name }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" name="email" value="{{ auth()->user()->email }}" required>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Email Address</label>
-                                    <input type="email" class="form-control" name="email" value="{{ auth()->user()->email }}" required>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" name="phone" value="{{ auth()->user()->phone }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Account Status</label>
+                                        <input type="text" class="form-control" value="{{ auth()->user()->status }}" readonly>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Phone Number</label>
-                                    <input type="tel" class="form-control" name="phone" value="{{ auth()->user()->phone }}">
-                                </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                    <i class="fas fa-lock"></i> Change Password
+                                </button>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Account Status</label>
-                                    <input type="text" class="form-control" value="{{ auth()->user()->status }}" readonly>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Save Changes
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex gap-3 flex-wrap">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                                <i class="fas fa-plus me-2"></i>Add New Address
                             </button>
                             <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-                                <i class="fas fa-lock"></i> Change Password
+                                <i class="fas fa-lock me-2"></i>Change Password
                             </button>
                         </div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex gap-3 flex-wrap">
-                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-                            <i class="fas fa-plus me-2"></i>Add New Address
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-                            <i class="fas fa-lock me-2"></i>Change Password
-                        </button>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Account Statistics -->
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <i class="fas fa-shopping-bag fa-2x text-primary mb-2"></i>
-                            <h4>{{ auth()->user()->orders->count() ?? 0 }}</h4>
-                            <p class="text-muted mb-0">Total Orders</p>
+                
+                <!-- Account Statistics -->
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-shopping-bag fa-2x text-primary mb-2"></i>
+                                <h4>{{ auth()->user()->orders->count() ?? 0 }}</h4>
+                                <p class="text-muted mb-0">Total Orders</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-box fa-2x text-success mb-2"></i>
+                                <h4>{{ auth()->user()->orders()->where('order_status', 'delivered')->count() ?? 0 }}</h4>
+                                <p class="text-muted mb-0">Delivered Orders</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-calendar fa-2x text-info mb-2"></i>
+                                <h4>{{ auth()->user()->created_at->format('M Y') }}</h4>
+                                <p class="text-muted mb-0">Member Since</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <i class="fas fa-box fa-2x text-success mb-2"></i>
-                            <h4>{{ auth()->user()->orders()->where('order_status', 'delivered')->count() ?? 0 }}</h4>
-                            <p class="text-muted mb-0">Delivered Orders</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <i class="fas fa-calendar fa-2x text-info mb-2"></i>
-                            <h4>{{ auth()->user()->created_at->format('M Y') }}</h4>
-                            <p class="text-muted mb-0">Member Since</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endif
         </div>
     </div>
 </div>

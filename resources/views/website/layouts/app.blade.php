@@ -113,6 +113,7 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="{{ route('account.index') }}"><i class="fas fa-user me-2"></i> My Account</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('account.index', ['tab' => 'wishlist']) }}"><i class="fas fa-heart me-2"></i> My Wishlist</a></li>
                                     <li><a class="dropdown-item" href="{{ route('account.orders') }}"><i class="fas fa-shopping-bag me-2"></i> My Orders</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
