@@ -13,6 +13,7 @@ class AdminUserSeeder extends Seeder
             'name' => 'Admin User',
             'email' => 'admin@localshop.com',
             'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
     }
 }

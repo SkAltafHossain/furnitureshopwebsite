@@ -3,10 +3,10 @@
 @section('title', 'Products')
 
 @section('content')
-<div class="container py-4">
+<div class="container-fluid py-5">
     <div class="row">
         <!-- Sidebar Filters -->
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">Filters</h5>
@@ -74,7 +74,7 @@
         </div>
         
         <!-- Products Grid -->
-        <div class="col-md-9">
+        <div class="col-md-10">
             <!-- Breadcrumb -->
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
@@ -111,7 +111,7 @@
             <!-- Products -->
             <div id="products-container" class="row">
                 @forelse($products as $product)
-                    <div class="col-md-6 col-lg-4 mb-4 product-item">
+                    <div class="col-md-6 col-lg-2-4 mb-4 product-item">
                         <div class="card h-100 product-card">
                             @if($product->image)
                                 <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top" alt="{{ $product->name }}" style="height: 200px; object-fit: cover;">

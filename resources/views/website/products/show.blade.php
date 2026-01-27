@@ -3,7 +3,8 @@
 @section('title', $product->name)
 
 @section('content')
-<div class="container py-4">
+<div class="container-fluid py-5">
+    <div class="px-3 px-md-4 px-lg-5">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -195,6 +196,7 @@
             </div>
         </div>
     @endif
+    </div>
 </div>
 @endsection
 

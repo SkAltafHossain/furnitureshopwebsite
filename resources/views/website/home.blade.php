@@ -52,7 +52,7 @@
 
 <!-- Featured Categories -->
 <section class="py-5">
-    <div class="container">
+    <div class="container-fluid">
         <div class="text-center mb-4">
             <h2 class="h3">Shop by Category</h2>
             <p class="text-muted">Browse our wide range of products</p>
@@ -84,14 +84,14 @@
 
 <!-- Latest Products -->
 <section class="py-5 bg-light">
-    <div class="container">
+    <div class="container-fluid">
         <div class="text-center mb-4">
             <h2 class="h3">Latest Products</h2>
             <p class="text-muted">Check out our newest arrivals</p>
         </div>
         <div class="row">
             @forelse($latestProducts as $product)
-                <div class="col-md-6 col-lg-3 mb-4">
+                <div class="col-md-6 col-lg-2-4 mb-4">
                     <div class="card h-100 product-card">
                         @if($product->image)
                             <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top" alt="{{ $product->name }}" style="height: 200px; object-fit: cover;">
@@ -137,14 +137,14 @@
 <!-- Featured Products -->
 @if($featuredProducts->count() > 0)
 <section class="py-5">
-    <div class="container">
+    <div class="container-fluid">
         <div class="text-center mb-4">
             <h2 class="h3">Featured Products</h2>
             <p class="text-muted">Handpicked products just for you</p>
         </div>
         <div class="row">
             @foreach($featuredProducts as $product)
-                <div class="col-md-6 col-lg-3 mb-4">
+                <div class="col-md-6 col-lg-2-4 mb-4">
                     <div class="card h-100 product-card">
                         @if($product->image)
                             <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top" alt="{{ $product->name }}" style="height: 200px; object-fit: cover;">
@@ -183,7 +183,7 @@
 
 <!-- Shop Highlights -->
 <section class="py-5 bg-light">
-    <div class="container">
+    <div class="container-fluid">
         <div class="row text-center">
             <div class="col-md-3 mb-4">
                 <div class="highlight-item">

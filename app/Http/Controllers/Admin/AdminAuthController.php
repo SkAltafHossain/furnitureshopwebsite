@@ -20,7 +20,17 @@ class AdminAuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::guard('admin')->attempt($credentials)) {
+            $user = Auth::guard('admin')->user();
+            
+            // Check if user is admin
+            if (!$user->is_admin) {
+                Auth::guard('admin')->logout();
+                return back()->withErrors([
+                    'email' => 'You do not have admin privileges.',
+                ]);
+            }
+            
             $request->session()->regenerate();
             return redirect()->intended(route('admin.dashboard'));
         }
@@ -32,7 +42,7 @@ class AdminAuthController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        Auth::guard('admin')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('admin.login');
