@@ -209,12 +209,12 @@ $(document).ready(function() {
         ajax: '{{ route("admin.products.data") }}',
         columns: [
             { data: 'id', name: 'id' },
-            { data: 'product_name', name: 'product_name' },
+            { data: 'name', name: 'name' },
             { 
                 data: 'category', 
-                name: 'category.category_name',
+                name: 'category.name',
                 render: function(data) {
-                    return data ? data.category_name : 'N/A';
+                    return data ? data.name : 'N/A';
                 }
             },
             { 
@@ -229,8 +229,8 @@ $(document).ready(function() {
                 }
             },
             { 
-                data: 'stock_quantity', 
-                name: 'stock_quantity',
+                data: 'stock', 
+                name: 'stock',
                 render: function(data) {
                     var badgeClass = data > 0 ? 'bg-success' : 'bg-danger';
                     var text = data > 0 ? 'In Stock (' + data + ')' : 'Out of Stock';
@@ -238,8 +238,8 @@ $(document).ready(function() {
                 }
             },
             { 
-                data: 'product_image', 
-                name: 'product_image',
+                data: 'image', 
+                name: 'image',
                 render: function(data) {
                     return '<img src="' + (data ? '/storage/' + data : '/placeholder.jpg') + 
                            '" class="img-thumbnail" style="max-width: 80px; max-height: 60px;">';
@@ -279,7 +279,7 @@ $(document).ready(function() {
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="btn btn-sm btn-danger delete-product" 
-                                data-id="${row.id}" data-name="${row.product_name}">
+                                data-id="${row.id}" data-name="${row.name}">
                             <i class="fas fa-trash"></i>
                         </button>
                     `;
@@ -318,15 +318,15 @@ $(document).ready(function() {
             .done(function(data) {
                 $('#product_id').val(data.id);
                 $('#category_id').val(data.category_id);
-                $('#product_name').val(data.product_name);
+                $('#product_name').val(data.name);
                 $('#description').val(data.description);
                 $('#price').val(data.price);
                 $('#discount_price').val(data.discount_price);
-                $('#stock_quantity').val(data.stock_quantity);
+                $('#stock_quantity').val(data.stock);
                 $('#status').val(data.status);
                 
-                if (data.product_image) {
-                    $('#imagePreview').html('<img src="/storage/' + data.product_image + '" class="img-thumbnail" style="max-width: 200px;">');
+                if (data.image) {
+                    $('#imagePreview').html('<img src="/storage/' + data.image + '" class="img-thumbnail" style="max-width: 200px;">');
                 }
                 
                 $('#productModalTitle').text('Edit Product');

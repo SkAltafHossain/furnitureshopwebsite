@@ -26,11 +26,11 @@ class ProductController extends Controller
     {
         $request->validate([
             'category_id' => 'required|exists:categories,id',
-            'product_name' => 'required|string|max:255|unique:products,product_name',
+            'product_name' => 'required|string|max:255|unique:products,name',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0|lt:price',
-            'stock_quantity' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
             'product_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:active,inactive',
         ]);
@@ -39,13 +39,13 @@ class ProductController extends Controller
 
         Product::create([
             'category_id' => $request->category_id,
-            'product_name' => $request->product_name,
+            'name' => $request->product_name,
             'slug' => Str::slug($request->product_name),
             'description' => $request->description,
             'price' => $request->price,
             'discount_price' => $request->discount_price,
-            'stock_quantity' => $request->stock_quantity,
-            'product_image' => $imagePath,
+            'stock' => $request->stock,
+            'image' => $imagePath,
             'status' => $request->status,
         ]);
 
@@ -64,29 +64,29 @@ class ProductController extends Controller
 
         $request->validate([
             'category_id' => 'required|exists:categories,id',
-            'product_name' => 'required|string|max:255|unique:products,product_name,'.$id,
+            'product_name' => 'required|string|max:255|unique:products,name,'.$id,
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'discount_price' => 'nullable|numeric|min:0|lt:price',
-            'stock_quantity' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
             'product_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:active,inactive',
         ]);
 
         $data = [
             'category_id' => $request->category_id,
-            'product_name' => $request->product_name,
+            'name' => $request->product_name,
             'slug' => Str::slug($request->product_name),
             'description' => $request->description,
             'price' => $request->price,
             'discount_price' => $request->discount_price,
-            'stock_quantity' => $request->stock_quantity,
+            'stock' => $request->stock,
             'status' => $request->status,
         ];
 
         if ($request->hasFile('product_image')) {
             $imagePath = $request->file('product_image')->store('products', 'public');
-            $data['product_image'] = $imagePath;
+            $data['image'] = $imagePath;
         }
 
         $product->update($data);

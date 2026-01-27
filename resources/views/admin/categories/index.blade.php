@@ -90,11 +90,11 @@ $(document).ready(function() {
         ajax: '{{ route("admin.categories.data") }}',
         columns: [
             { data: 'id', name: 'id' },
-            { data: 'category_name', name: 'category_name' },
+            { data: 'name', name: 'name' },
             { data: 'slug', name: 'slug' },
             { 
-                data: 'category_image', 
-                name: 'category_image',
+                data: 'image', 
+                name: 'image',
                 render: function(data) {
                     return '<img src="' + (data ? '/storage/' + data : '/placeholder.jpg') + 
                            '" class="img-thumbnail" style="max-width: 100px; max-height: 50px;">';
@@ -131,7 +131,7 @@ $(document).ready(function() {
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="btn btn-sm btn-danger delete-category" 
-                                data-id="${row.id}" data-name="${row.category_name}">
+                                data-id="${row.id}" data-name="${row.name}">
                             <i class="fas fa-trash"></i>
                         </button>
                     `;
@@ -169,11 +169,11 @@ $(document).ready(function() {
         $.get('{{ route("admin.categories.edit", ":id") }}'.replace(':id', id))
             .done(function(data) {
                 $('#category_id').val(data.id);
-                $('#category_name').val(data.category_name);
+                $('#category_name').val(data.name);
                 $('#status').val(data.status);
                 
-                if (data.category_image) {
-                    $('#imagePreview').html('<img src="/storage/' + data.category_image + '" class="img-thumbnail" style="max-width: 200px;">');
+                if (data.image) {
+                    $('#imagePreview').html('<img src="/storage/' + data.image + '" class="img-thumbnail" style="max-width: 200px;">');
                 }
                 
                 $('#categoryModalTitle').text('Edit Category');

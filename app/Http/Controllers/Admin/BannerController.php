@@ -23,7 +23,7 @@ class BannerController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'subtitle' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:255',
             'banner_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:active,inactive',
         ]);
@@ -32,8 +32,8 @@ class BannerController extends Controller
 
         Banner::create([
             'title' => $request->title,
-            'subtitle' => $request->subtitle,
-            'banner_image' => $imagePath,
+            'description' => $request->description,
+            'image' => $imagePath,
             'status' => $request->status,
         ]);
 
@@ -52,20 +52,20 @@ class BannerController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'subtitle' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:255',
             'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:active,inactive',
         ]);
 
         $data = [
             'title' => $request->title,
-            'subtitle' => $request->subtitle,
+            'description' => $request->description,
             'status' => $request->status,
         ];
 
         if ($request->hasFile('banner_image')) {
             $imagePath = $request->file('banner_image')->store('banners', 'public');
-            $data['banner_image'] = $imagePath;
+            $data['image'] = $imagePath;
         }
 
         $banner->update($data);
@@ -80,5 +80,13 @@ class BannerController extends Controller
         $banner->save();
 
         return response()->json(['success' => 'Banner status updated successfully']);
+    }
+
+    public function destroy($id)
+    {
+        $banner = Banner::findOrFail($id);
+        $banner->delete();
+
+        return response()->json(['success' => 'Banner deleted successfully']);
     }
 }

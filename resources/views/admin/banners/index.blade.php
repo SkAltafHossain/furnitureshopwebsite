@@ -51,8 +51,8 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="subtitle" class="form-label">Subtitle</label>
-                        <input type="text" class="form-control" id="subtitle" name="subtitle">
+                        <label for="description" class="form-label">Subtitle</label>
+                        <input type="text" class="form-control" id="description" name="description">
                     </div>
                     
                     <div class="mb-3">
@@ -95,10 +95,10 @@ $(document).ready(function() {
         columns: [
             { data: 'id', name: 'id' },
             { data: 'title', name: 'title' },
-            { data: 'subtitle', name: 'subtitle' },
+            { data: 'description', name: 'description' },
             { 
-                data: 'banner_image', 
-                name: 'banner_image',
+                data: 'image', 
+                name: 'image',
                 render: function(data) {
                     return '<img src="' + (data ? '/storage/' + data : '/placeholder.jpg') + 
                            '" class="img-thumbnail" style="max-width: 100px; max-height: 50px;">';
@@ -134,9 +134,9 @@ $(document).ready(function() {
                         <button class="btn btn-sm btn-primary edit-banner" data-id="${row.id}">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm ${row.status === 'active' ? 'btn-warning' : 'btn-success'} toggle-status" 
-                                data-id="${row.id}" title="${row.status === 'active' ? 'Deactivate' : 'Activate'}">
-                            <i class="fas fa-${row.status === 'active' ? 'eye-slash' : 'eye'}"></i>
+                        <button class="btn btn-sm btn-danger delete-banner" 
+                                data-id="${row.id}" data-name="${row.title}">
+                            <i class="fas fa-trash"></i>
                         </button>
                     `;
                 }
@@ -174,11 +174,11 @@ $(document).ready(function() {
             .done(function(data) {
                 $('#banner_id').val(data.id);
                 $('#title').val(data.title);
-                $('#subtitle').val(data.subtitle);
+                $('#description').val(data.description);
                 $('#status').val(data.status);
                 
-                if (data.banner_image) {
-                    $('#imagePreview').html('<img src="/storage/' + data.banner_image + '" class="img-thumbnail" style="max-width: 200px;">');
+                if (data.image) {
+                    $('#imagePreview').html('<img src="/storage/' + data.image + '" class="img-thumbnail" style="max-width: 200px;">');
                 }
                 
                 $('#bannerModalTitle').text('Edit Banner');
@@ -188,30 +188,27 @@ $(document).ready(function() {
             });
     });
 
-    // Toggle status with switch
-    $(document).on('change', '.status-toggle', function() {
+    // Delete banner
+    $(document).on('click', '.delete-banner', function() {
         var id = $(this).data('id');
-        var checkbox = $(this);
+        var name = $(this).data('name');
         
-        $.ajax({
-            url: '{{ route("admin.banners.toggle-status", ":id") }}'.replace(':id', id),
-            method: 'PATCH',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                table.ajax.reload();
-                // Show success message
-                var toast = '<div class="position-fixed top-0 end-0 p-3" style="z-index: 11"><div class="toast show" role="alert"><div class="toast-body">' + response.success + '</div></div></div>';
-                $('body').append(toast);
-                setTimeout(function() { $('.toast').parent().remove(); }, 3000);
-            },
-            error: function() {
-                // Revert checkbox on error
-                checkbox.prop('checked', !checkbox.prop('checked'));
-                alert('Error occurred while updating status.');
-            }
-        });
+        if (confirm('Are you sure you want to delete the banner "' + name + '"? This action can be undone.')) {
+            $.ajax({
+                url: '{{ route("admin.banners.destroy", ":id") }}'.replace(':id', id),
+                method: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    table.ajax.reload();
+                    alert(response.success);
+                },
+                error: function() {
+                    alert('Error occurred while deleting banner.');
+                }
+            });
+        }
     });
 
     // Submit form

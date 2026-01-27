@@ -24,7 +24,7 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'category_name' => 'required|string|max:255|unique:categories,category_name',
+            'name' => 'required|string|max:255|unique:categories,name',
             'category_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:active,inactive',
         ]);
@@ -32,9 +32,9 @@ class CategoryController extends Controller
         $imagePath = $request->file('category_image')->store('categories', 'public');
 
         Category::create([
-            'category_name' => $request->category_name,
-            'slug' => Str::slug($request->category_name),
-            'category_image' => $imagePath,
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'image' => $imagePath,
             'status' => $request->status,
         ]);
 
@@ -52,20 +52,20 @@ class CategoryController extends Controller
         $category = Category::findOrFail($id);
 
         $request->validate([
-            'category_name' => 'required|string|max:255|unique:categories,category_name,'.$id,
+            'name' => 'required|string|max:255|unique:categories,name,'.$id,
             'category_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:active,inactive',
         ]);
 
         $data = [
-            'category_name' => $request->category_name,
-            'slug' => Str::slug($request->category_name),
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
             'status' => $request->status,
         ];
 
         if ($request->hasFile('category_image')) {
             $imagePath = $request->file('category_image')->store('categories', 'public');
-            $data['category_image'] = $imagePath;
+            $data['image'] = $imagePath;
         }
 
         $category->update($data);
