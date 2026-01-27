@@ -37,7 +37,7 @@ class CheckoutController extends Controller
             'phone' => 'required|string|max:20',
             'address_id' => 'nullable|exists:addresses,id',
             'address' => 'required_without:address_id|string|max:500',
-            'payment_method' => 'required|in:cod,online'
+            'payment_method' => 'required|in:cod'
         ]);
         
         if ($validator->fails()) {
@@ -80,9 +80,9 @@ class CheckoutController extends Controller
                 'customer_phone' => $request->phone,
                 'customer_address' => $address ? $address->full_address : $request->address,
                 'total_amount' => $total,
-                'payment_method' => $request->payment_method,
+                'payment_method' => 'cod',
                 'order_status' => 'pending',
-                'payment_status' => $request->payment_method === 'cod' ? 'pending' : 'pending'
+                'payment_status' => 'pending'
             ]);
             
             // Create order items

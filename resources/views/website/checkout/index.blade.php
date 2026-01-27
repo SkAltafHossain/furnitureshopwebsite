@@ -168,19 +168,12 @@
                             <h5 class="mb-0">Payment Method</h5>
                         </div>
                         <div class="card-body">
-                            <div class="form-check mb-2">
+                            <div class="form-check">
                                 <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" checked>
                                 <label class="form-check-label" for="cod">
                                     <i class="fas fa-money-bill-wave"></i> Cash on Delivery (COD)
                                 </label>
                                 <p class="text-muted small ms-4">Pay when you receive your order</p>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="payment_method" id="online" value="online">
-                                <label class="form-check-label" for="online">
-                                    <i class="fas fa-credit-card"></i> Online Payment
-                                </label>
-                                <p class="text-muted small ms-4">Pay securely using credit/debit card, UPI, or net banking</p>
                             </div>
                             @error('payment_method')
                                 <div class="text-danger small">{{ $message }}</div>
