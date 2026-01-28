@@ -47,7 +47,7 @@ Route::get('/privacy', [App\Http\Controllers\Website\PageController::class, 'pri
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     // Guest routes for admin
-    Route::middleware('guest')->group(function () {
+    Route::middleware('guest:admin')->group(function () {
         Route::get('/login', [App\Http\Controllers\Admin\AdminAuthController::class, 'showLoginForm'])->name('login');
         Route::post('/login', [App\Http\Controllers\Admin\AdminAuthController::class, 'login']);
     });
