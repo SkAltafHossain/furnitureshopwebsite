@@ -15,7 +15,7 @@ class AdminController extends Controller
     public function dashboard()
     {
         $stats = [
-            'total_users' => User::count(),
+            'total_users' => User::where('is_admin', false)->count(),
             'total_banners' => Banner::count(),
             'total_categories' => Category::count(),
             'total_products' => Product::count(),

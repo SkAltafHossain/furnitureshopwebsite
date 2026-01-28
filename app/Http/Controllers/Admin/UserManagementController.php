@@ -15,7 +15,7 @@ class UserManagementController extends Controller
 
     public function getData()
     {
-        $users = User::latest()->get();
+        $users = User::where('is_admin', false)->latest()->get();
         return response()->json(['data' => $users]);
     }
 
