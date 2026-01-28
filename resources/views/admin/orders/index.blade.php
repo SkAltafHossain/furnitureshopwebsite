@@ -153,8 +153,8 @@ $(document).ready(function() {
                         </button>
                     `;
                     
-                    // Only show update status button if order is not cancelled
-                    if (row.order_status !== 'cancelled') {
+                    // Only show update status button if order is not cancelled or delivered
+                    if (row.order_status !== 'cancelled' && row.order_status !== 'delivered') {
                         actions += `
                             <button class="btn btn-sm btn-primary update-status" 
                                     data-id="${row.id}" data-status="${row.order_status}">
