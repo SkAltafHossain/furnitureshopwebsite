@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-orders', [App\Http\Controllers\Website\AccountController::class, 'orders'])->name('account.orders');
     Route::get('/my-orders/{id}', [App\Http\Controllers\Website\AccountController::class, 'orderDetails'])->name('account.order-details');
     Route::post('/my-orders/{id}/cancel', [App\Http\Controllers\Website\AccountController::class, 'cancelOrder'])->name('account.order-cancel');
+    Route::post('/my-orders/{id}/confirm-delivery', [App\Http\Controllers\Website\AccountController::class, 'confirmDelivery'])->name('account.order-confirm-delivery');
     Route::post('/addresses', [App\Http\Controllers\Website\CheckoutController::class, 'storeAddress'])->name('addresses.store');
     
     // Wishlist Routes

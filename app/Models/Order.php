@@ -40,11 +40,13 @@ class Order extends Model
             'processing' => 'bg-info',
             'shipped' => 'bg-primary',
             'delivered' => 'bg-success',
+            'delivered_confirmed' => 'bg-success',
             'cancelled' => 'bg-danger',
         ];
 
         $badgeClass = $badges[$this->order_status] ?? 'bg-secondary';
-        return '<span class="badge ' . $badgeClass . '">' . ucfirst($this->order_status) . '</span>';
+        $statusText = $this->order_status === 'delivered_confirmed' ? 'Delivered' : ucfirst($this->order_status);
+        return '<span class="badge ' . $badgeClass . '">' . $statusText . '</span>';
     }
 
     public function getPaymentTypeBadgeAttribute()
@@ -66,5 +68,21 @@ class Order extends Model
     public function address()
     {
         return $this->belongsTo(Address::class);
+    }
+    
+    public function canBeConfirmedByUser()
+    {
+        return $this->order_status === 'delivered' && 
+               $this->updated_at->diffInHours(now()) < 24;
+    }
+    
+    public function confirmDelivery()
+    {
+        if ($this->canBeConfirmedByUser()) {
+            $this->order_status = 'delivered_confirmed';
+            $this->save();
+            return true;
+        }
+        return false;
     }
 }

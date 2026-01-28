@@ -57,8 +57,8 @@
                             <small class="text-muted">{{ $order->created_at->format('d M Y, h:i A') }}</small>
                         </div>
                         <div class="text-end">
-                            <span class="badge {{ $order->order_status == 'delivered' ? 'bg-success' : ($order->order_status == 'pending' ? 'bg-warning' : 'bg-info') }}">
-                                {{ ucfirst($order->order_status) }}
+                            <span class="badge {{ $order->order_status == 'delivered' || $order->order_status == 'delivered_confirmed' ? 'bg-success' : ($order->order_status == 'pending' ? 'bg-warning' : 'bg-info') }}">
+                                {{ $order->order_status == 'delivered_confirmed' ? 'Delivered' : ucfirst($order->order_status) }}
                             </span>
                         </div>
                     </div>
@@ -74,8 +74,18 @@
                                     <i class="fas fa-eye"></i> View Details
                                 </a>
                                 @if($order->order_status == 'delivered')
-                                    <button class="btn btn-outline-success btn-sm mt-1">
-                                        <i class="fas fa-redo"></i> Reorder
+                                    @if($order->canBeConfirmedByUser())
+                                        <button class="btn btn-success btn-sm mt-1" onclick="confirmDeliveryFromList({{ $order->id }})">
+                                            <i class="fas fa-check"></i> Confirm Delivery
+                                        </button>
+                                    @else
+                                        <button class="btn btn-outline-success btn-sm mt-1">
+                                            <i class="fas fa-redo"></i> Reorder
+                                        </button>
+                                    @endif
+                                @elseif($order->order_status == 'delivered_confirmed')
+                                    <button class="btn btn-success btn-sm mt-1" disabled>
+                                        <i class="fas fa-check"></i> Confirmed
                                     </button>
                                 @endif
                             </div>
@@ -102,4 +112,31 @@
         </div>
     </div>
 </div>
+
+<script>
+function confirmDeliveryFromList(orderId) {
+    if (confirm('Have you received this order?')) {
+        fetch(`{{ route('account.order-confirm-delivery', ':id') }}`.replace(':id', orderId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.success);
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to confirm delivery'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while confirming delivery');
+        });
+    }
+}
+</script>
 @endsection

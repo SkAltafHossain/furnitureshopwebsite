@@ -142,4 +142,22 @@ class AccountController extends Controller
             'status' => 'cancelled'
         ]);
     }
+    
+    public function confirmDelivery($id)
+    {
+        $order = Order::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+            
+        if ($order->confirmDelivery()) {
+            return response()->json([
+                'success' => 'Delivery confirmed successfully',
+                'status' => 'delivered_confirmed'
+            ]);
+        }
+        
+        return response()->json([
+            'error' => 'Order cannot be confirmed. It must be delivered and within 24 hours of delivery.'
+        ], 422);
+    }
 }

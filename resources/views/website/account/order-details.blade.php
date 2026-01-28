@@ -169,8 +169,18 @@
                                 
                                 <div class="mt-3">
                                     @if($order->order_status == 'delivered')
-                                        <button class="btn btn-success btn-sm">
-                                            <i class="fas fa-redo"></i> Reorder
+                                        @if($order->canBeConfirmedByUser())
+                                            <button class="btn btn-success btn-sm" onclick="confirmDelivery({{ $order->id }})">
+                                                <i class="fas fa-check"></i> Confirm Delivery
+                                            </button>
+                                        @else
+                                            <button class="btn btn-success btn-sm">
+                                                <i class="fas fa-redo"></i> Reorder
+                                            </button>
+                                        @endif
+                                    @elseif($order->order_status == 'delivered_confirmed')
+                                        <button class="btn btn-success btn-sm" disabled>
+                                            <i class="fas fa-check"></i> Delivery Confirmed
                                         </button>
                                     @elseif($order->order_status == 'pending')
                                         <button class="btn btn-outline-danger btn-sm" onclick="cancelOrder({{ $order->id }})" style="cursor: pointer;">
@@ -204,10 +214,7 @@ function cancelOrder(orderId) {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             }
         })
-        .then(response => {
-            console.log('Response received:', response);
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             console.log('Data received:', data);
             if (data.success) {
@@ -220,6 +227,36 @@ function cancelOrder(orderId) {
         .catch(error => {
             console.error('Error:', error);
             alert('An error occurred while cancelling the order');
+        });
+    } else {
+        console.log('User cancelled the action');
+    }
+}
+
+function confirmDelivery(orderId) {
+    console.log('Confirm delivery function called with ID:', orderId);
+    if (confirm('Have you received this order?')) {
+        console.log('User confirmed delivery');
+        fetch(`{{ route('account.order-confirm-delivery', ':id') }}`.replace(':id', orderId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Data received:', data);
+            if (data.success) {
+                alert(data.success);
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to confirm delivery'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while confirming delivery');
         });
     } else {
         console.log('User cancelled the action');
