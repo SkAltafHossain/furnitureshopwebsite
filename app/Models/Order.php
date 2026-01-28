@@ -15,11 +15,11 @@ class Order extends Model
         'customer_name',
         'customer_email',
         'customer_phone',
-        'customer_address',
         'total_amount',
         'payment_method',
         'payment_status',
         'order_status',
+        'address_id',
     ];
 
     protected $casts = [
@@ -61,5 +61,10 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
     }
 }

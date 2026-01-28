@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -16,6 +17,16 @@ class CheckoutController extends Controller
     public function index()
     {
         $cart = session()->get('cart', []);
+        
+        // Debug: Show cart contents
+        if (!empty($cart)) {
+            $message = 'Cart has ' . count($cart) . ' items: ';
+            foreach ($cart as $productId => $item) {
+                $message .= 'Product ' . $productId . ' (Qty: ' . $item['quantity'] . '), ';
+            }
+            // Log instead of alert since alert() doesn't exist in PHP
+            \Log::info('Cart debug: ' . $message);
+        }
         
         if (empty($cart)) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
@@ -33,22 +44,42 @@ class CheckoutController extends Controller
     
     public function process(Request $request)
     {
+        $request->merge([
+            'payment_method' => strtoupper((string) $request->input('payment_method')),
+        ]);
+
+        // Debug: Log incoming request data
+        \Log::info('Checkout process called', [
+            'request_data' => $request->all(),
+            'cart_contents' => session()->get('cart', []),
+            'user_id' => auth()->id()
+        ]);
+        
+        // Only allow authenticated users with addresses to checkout
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Please login to proceed with checkout.');
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
-            'address_id' => 'nullable|exists:addresses,id',
-            'address' => 'required_without:address_id|string|max:500',
-            'payment_method' => 'required|in:cod'
+            'address_id' => [
+                'required',
+                Rule::exists('addresses', 'id')->where('user_id', auth()->id())
+            ],
+            'payment_method' => 'required|in:COD'
         ]);
         
         if ($validator->fails()) {
+            \Log::error('Checkout validation failed', ['errors' => $validator->errors()->toArray()]);
             return back()->withErrors($validator)->withInput();
         }
         
         $cart = session()->get('cart', []);
         
         if (empty($cart)) {
+            \Log::error('Cart is empty during checkout');
             return back()->with('error', 'Your cart is empty');
         }
         
@@ -73,18 +104,18 @@ class CheckoutController extends Controller
                 }
             }
             
-            // Create order
+            // Create order with address_id reference
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'order_id' => 'ORD' . time() . rand(1000, 9999),
                 'customer_name' => $request->name,
                 'customer_email' => $request->email,
                 'customer_phone' => $request->phone,
-                'customer_address' => $address ? $address->full_address : $request->address,
+                'address_id' => $request->address_id,
                 'total_amount' => $total,
-                'payment_method' => 'cod',
+                'payment_method' => $request->payment_method,
                 'order_status' => 'pending',
-                'payment_status' => 'pending'
+                'payment_status' => 'pending',
             ]);
             
             // Create order items
@@ -105,12 +136,22 @@ class CheckoutController extends Controller
             
             // Clear cart
             session()->forget('cart');
-            
-            return redirect()->route('account.order-details', $order->id)
+
+            if (auth()->check()) {
+                return redirect()->route('account.order-details', $order->id)
+                    ->with('success', 'Order placed successfully!');
+            }
+
+            return redirect()->route('home')
                 ->with('success', 'Order placed successfully!');
                 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Checkout failed', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'request_data' => $request->all(),
+            ]);
             return back()->with('error', 'Failed to place order. Please try again.');
         }
     }

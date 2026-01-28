@@ -44,7 +44,7 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Phone</label>
-                                        <input type="tel" class="form-control" name="phone" value="{{ auth()->user()->phone ?? old('phone') }}" required>
+                                        <input type="tel" class="form-control" name="phone" value="{{ auth()->user()->phone ?? old('phone') ?? '' }}" placeholder="Enter your phone number" required>
                                     </div>
                                 </div>
                             @else
@@ -72,7 +72,7 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Phone</label>
-                                        <input type="tel" class="form-control" name="phone" value="{{ old('phone') }}" required>
+                                        <input type="tel" class="form-control" name="phone" value="{{ old('phone') ?? '' }}" placeholder="Enter your phone number" required>
                                         @error('phone')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -87,6 +87,9 @@
                                     <!-- Always show address selection for logged-in users -->
                                     <div class="mb-3">
                                         @if($addresses->count() > 0)
+                                            @php
+                                                $hasDefaultAddress = $addresses->contains('is_default', true);
+                                            @endphp
                                             <!-- Saved Addresses -->
                                             <div class="form-check-group">
                                                 @foreach($addresses as $address)
@@ -95,7 +98,7 @@
                                                             <div class="form-check">
                                                                 <input class="form-check-input" type="radio" name="address_id" 
                                                                        id="address_{{ $address->id }}" value="{{ $address->id }}"
-                                                                       {{ $address->is_default ? 'checked' : ''}}>
+                                                                       {{ ($address->is_default || (!$hasDefaultAddress && $loop->first)) ? 'checked' : ''}}>
                                                                 <label class="form-check-label w-100" for="address_{{ $address->id }}">
                                                                     <div class="d-flex justify-content-between align-items-start">
                                                                         <div>
@@ -149,8 +152,8 @@
                                                 <p class="text-muted small mt-2">Add a delivery address to continue</p>
                                             </div>
                                             
-                                            <!-- Hidden manual address input as fallback -->
-                                            <div id="manualAddressInput" style="display: none;" class="mt-3">
+                                            <!-- Manual address input as fallback -->
+                                            <div id="manualAddressInput" class="mt-3">
                                                 <textarea class="form-control" name="address" rows="3" placeholder="Enter your complete delivery address">{{ old('address') }}</textarea>
                                                 @error('address')
                                                     <div class="text-danger small">{{ $message }}</div>
@@ -176,7 +179,7 @@
                         </div>
                         <div class="card-body">
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" checked>
+                                <input class="form-check-input" type="radio" name="payment_method" id="cod" value="COD" checked>
                                 <label class="form-check-label" for="cod">
                                     <i class="fas fa-money-bill-wave"></i> Cash on Delivery (COD)
                                 </label>
@@ -286,38 +289,50 @@ $(document).ready(function() {
     
     // Form validation for checkout
     $('form[action="{{ route("checkout.process") }}"]').submit(function(e) {
-        var phone = $('input[name="phone"]').val();
+        // Get the first visible phone input
+        var phoneInput = $('input[name="phone"]:visible').first();
+        var phone = phoneInput.val();
+        var addressInputs = $('input[name="address_id"]');
+        var hasAddressOptions = addressInputs.length > 0;
         var addressSelected = $('input[name="address_id"]:checked').val();
         var customAddress = $('textarea[name="address"]').val();
         
-        // Basic phone validation
-        if (phone.replace(/\D/g, '').length < 10) {
+        // Basic phone validation (more flexible for international numbers)
+        var cleanPhone = phone.replace(/\D/g, '');
+        if (cleanPhone.length < 10) {
             e.preventDefault();
-            showToast('Please enter a valid phone number', 'error');
+            showToast('Please enter a valid phone number (at least 10 digits)', 'error');
+            return false;
+        }
+        
+        // Additional validation for common formats
+        if (!phone.match(/^[\+]?[0-9\s\-\(\)]+$/)) {
+            e.preventDefault();
+            showToast('Please enter a valid phone number format', 'error');
             return false;
         }
         
         // Address validation
-        if (auth()->check()) {
-            // For logged-in users, check if either saved address is selected or manual address is entered
-            if (addressSelected === undefined) {
+        @if(auth()->check())
+            // For logged-in users, require address selection if options exist, otherwise allow manual entry
+            if (hasAddressOptions && addressSelected === undefined) {
                 e.preventDefault();
                 showToast('Please select a delivery address', 'error');
                 return false;
             }
-            if (addressSelected === '' && !customAddress) {
+            if ((!hasAddressOptions || addressSelected === '') && !customAddress) {
                 e.preventDefault();
                 showToast('Please enter a delivery address', 'error');
                 return false;
             }
-        } else {
+        @else
             // For guests, check if manual address is entered
             if (!customAddress) {
                 e.preventDefault();
                 showToast('Please enter a delivery address', 'error');
                 return false;
             }
-        }
+        @endif
         
         // Disable submit button to prevent double submission
         var submitBtn = $(this).find('button[type="submit"]');

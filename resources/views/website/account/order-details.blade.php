@@ -77,7 +77,11 @@
                             <h6>Shipping Address</h6>
                             <p class="mb-0"><strong>{{ $order->customer_name }}</strong></p>
                             <p class="mb-0">{{ $order->customer_phone }}</p>
-                            <p class="mb-0">{{ $order->customer_address }}</p>
+                            @if($order->address)
+                                <p class="mb-0">{{ $order->address->full_address }}</p>
+                            @else
+                                <p class="text-danger">No address found</p>
+                            @endif
                         </div>
                         <div class="col-md-6">
                             <h6>Order Information</h6>

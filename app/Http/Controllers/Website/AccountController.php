@@ -110,7 +110,7 @@ class AccountController extends Controller
     {
         $order = Order::where('id', $id)
             ->where('user_id', auth()->id())
-            ->with('items.product')
+            ->with(['items.product', 'address'])
             ->firstOrFail();
             
         return view('website.account.order-details', compact('order'));
