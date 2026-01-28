@@ -219,6 +219,10 @@ $(document).ready(function() {
         var id = $('#order_id').val();
         var formData = new FormData(this);
         
+        // Add CSRF token to form data
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('_method', 'PATCH');
+        
         $.ajax({
             url: '{{ route("admin.orders.update-status", ":id") }}'.replace(':id', id),
             method: 'POST',
