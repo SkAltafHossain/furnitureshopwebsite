@@ -76,6 +76,22 @@
 
 @endsection
 
+@push('styles')
+<style>
+    .order-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    .order-section-title {
+        color: #0d6efd; /* Blue for all section titles */
+        border-color: #0d6efd30;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script>
 $(document).ready(function() {
@@ -95,11 +111,12 @@ $(document).ready(function() {
                 }
             },
             { 
-                data: 'payment_type', 
-                name: 'payment_type',
+                data: 'payment_method', 
+                name: 'payment_method',
                 render: function(data) {
-                    var badgeClass = data === 'COD' ? 'bg-success' : 'bg-info';
-                    return '<span class="badge ' + badgeClass + '">' + data + '</span>';
+                    var displayText = data ? data.toUpperCase() : 'N/A';
+                    var badgeClass = data && data.toUpperCase() === 'COD' ? 'bg-success' : 'bg-info';
+                    return '<span class="badge ' + badgeClass + '">' + displayText + '</span>';
                 }
             },
             { 
@@ -153,17 +170,30 @@ $(document).ready(function() {
                 var html = `
                     <div class="row">
                         <div class="col-md-6">
-                            <h6>Order Information</h6>
+                            <h6 class="order-section-title order-info">Order Information</h6>
                             <p><strong>Order ID:</strong> ${data.order_id}</p>
                             <p><strong>Customer Name:</strong> ${data.customer_name}</p>
+                            <p><strong>Customer Email:</strong> ${data.customer_email}</p>
+                            <p><strong>Customer Phone:</strong> ${data.customer_phone}</p>
                             <p><strong>Total Amount:</strong> ₹${parseFloat(data.total_amount).toFixed(2)}</p>
-                            <p><strong>Payment Type:</strong> ${data.payment_type}</p>
+                            <p><strong>Payment Type:</strong> ${data.payment_method ? data.payment_method.toUpperCase() : 'N/A'}</p>
+                            <p><strong>Payment Status:</strong> ${data.payment_status ? data.payment_status.charAt(0).toUpperCase() + data.payment_status.slice(1) : 'N/A'}</p>
                         </div>
                         <div class="col-md-6">
-                            <h6>Status & Dates</h6>
+                            <h6 class="order-section-title delivery-address">Delivery Address</h6>
+                            ${data.address ? `
+                                <p class="mb-0"><strong>${data.customer_name}</strong></p>
+                                <p class="mb-0">${data.customer_phone}</p>
+                                <p class="mb-0">
+                                    ${data.address.address_line1}${data.address.address_line2 ? ', ' + data.address.address_line2 : ''}, 
+                                    ${data.address.city}, ${data.address.state} - ${data.address.postal_code}, ${data.address.country}
+                                </p>
+                            ` : '<p>No address found</p>'}
+                            
+                            <h6 class="order-section-title status-dates mt-4">Status & Dates</h6>
                             <p><strong>Order Status:</strong> ${data.order_status.charAt(0).toUpperCase() + data.order_status.slice(1)}</p>
-                            <p><strong>Order Date:</strong> ${new Date(data.created_at).toLocaleDateString()}</p>
-                            <p><strong>Last Updated:</strong> ${new Date(data.updated_at).toLocaleDateString()}</p>
+                            <p><strong>Order Date:</strong> ${new Date(data.created_at).toLocaleString()}</p>
+                            <p><strong>Last Updated:</strong> ${new Date(data.updated_at).toLocaleString()}</p>
                         </div>
                     </div>
                 `;
