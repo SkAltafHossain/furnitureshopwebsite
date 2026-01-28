@@ -147,15 +147,23 @@ $(document).ready(function() {
                 orderable: false,
                 searchable: false,
                 render: function(data, type, row) {
-                    return `
+                    var actions = `
                         <button class="btn btn-sm btn-info view-order" data-id="${row.id}">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-primary update-status" 
-                                data-id="${row.id}" data-status="${row.order_status}">
-                            <i class="fas fa-edit"></i>
-                        </button>
                     `;
+                    
+                    // Only show update status button if order is not cancelled
+                    if (row.order_status !== 'cancelled') {
+                        actions += `
+                            <button class="btn btn-sm btn-primary update-status" 
+                                    data-id="${row.id}" data-status="${row.order_status}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        `;
+                    }
+                    
+                    return actions;
                 }
             }
         ]
@@ -248,6 +256,58 @@ $(document).ready(function() {
             }
         });
     });
+    
+    // Real-time updates using Server-Sent Events
+    if (typeof(EventSource) !== "undefined") {
+        var eventSource = new EventSource("{{ route('admin.orders.updates') }}");
+        
+        eventSource.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            
+            if (data.type === 'order_update') {
+                // Reload the DataTable to show updated orders
+                table.ajax.reload();
+                
+                // Show notification for updated orders
+                data.orders.forEach(function(order) {
+                    showNotification(`Order #${order.order_id} has been updated to: ${order.order_status}`);
+                });
+            }
+        };
+        
+        eventSource.onerror = function(event) {
+            console.error('EventSource failed:', event);
+            // Try to reconnect after 5 seconds
+            setTimeout(function() {
+                eventSource.close();
+                location.reload(); // Reload page to restart SSE
+            }, 5000);
+        };
+    } else {
+        console.log("Your browser does not support server-sent events.");
+    }
+    
+    // Function to show notifications
+    function showNotification(message) {
+        // Create notification element
+        var notification = document.createElement('div');
+        notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(function() {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 5000);
+    }
 });
 </script>
 @endpush

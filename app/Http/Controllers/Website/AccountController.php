@@ -126,4 +126,20 @@ class AccountController extends Controller
         
         return back()->with('success', 'Item removed from wishlist!');
     }
+    
+    public function cancelOrder($id)
+    {
+        $order = Order::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->where('order_status', 'pending')
+            ->firstOrFail();
+            
+        $order->order_status = 'cancelled';
+        $order->save();
+        
+        return response()->json([
+            'success' => 'Order cancelled successfully',
+            'status' => 'cancelled'
+        ]);
+    }
 }

@@ -173,9 +173,11 @@
                                             <i class="fas fa-redo"></i> Reorder
                                         </button>
                                     @elseif($order->order_status == 'pending')
-                                        <button class="btn btn-outline-danger btn-sm">
+                                        <button class="btn btn-outline-danger btn-sm" onclick="cancelOrder({{ $order->id }})" style="cursor: pointer;">
                                             <i class="fas fa-times"></i> Cancel Order
                                         </button>
+                                    @else
+                                        <small class="text-muted">Order cannot be cancelled (Status: {{ $order->order_status }})</small>
                                     @endif
                                     <a href="{{ route('account.orders') }}" class="btn btn-outline-primary btn-sm">
                                         <i class="fas fa-arrow-left"></i> Back to Orders
@@ -189,4 +191,39 @@
         </div>
     </div>
 </div>
+
+<script>
+function cancelOrder(orderId) {
+    console.log('Cancel order function called with ID:', orderId);
+    if (confirm('Are you sure you want to cancel this order?')) {
+        console.log('User confirmed cancellation');
+        fetch(`{{ route('account.order-cancel', ':id') }}`.replace(':id', orderId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => {
+            console.log('Response received:', response);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Data received:', data);
+            if (data.success) {
+                alert(data.success);
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to cancel order'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while cancelling the order');
+        });
+    } else {
+        console.log('User cancelled the action');
+    }
+}
+</script>
 @endsection

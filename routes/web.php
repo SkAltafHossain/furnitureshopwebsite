@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/addresses/{id}/set-default', [App\Http\Controllers\Website\AccountController::class, 'setDefaultAddress'])->name('account.set-default-address');
     Route::get('/my-orders', [App\Http\Controllers\Website\AccountController::class, 'orders'])->name('account.orders');
     Route::get('/my-orders/{id}', [App\Http\Controllers\Website\AccountController::class, 'orderDetails'])->name('account.order-details');
+    Route::post('/my-orders/{id}/cancel', [App\Http\Controllers\Website\AccountController::class, 'cancelOrder'])->name('account.order-cancel');
     Route::post('/addresses', [App\Http\Controllers\Website\CheckoutController::class, 'storeAddress'])->name('addresses.store');
     
     // Wishlist Routes
@@ -89,6 +90,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/orders/data', [App\Http\Controllers\Admin\OrderController::class, 'getData'])->name('orders.data');
         Route::get('/orders/{id}', [App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.show');
         Route::patch('/orders/{id}/update-status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
+        
+        // Real-time updates
+        Route::get('/orders/updates', [App\Http\Controllers\Admin\OrderUpdatesController::class, 'stream'])->name('orders.updates');
 
         // User Management
         Route::get('/users', [App\Http\Controllers\Admin\UserManagementController::class, 'index'])->name('users.index');
