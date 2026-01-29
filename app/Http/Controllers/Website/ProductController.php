@@ -17,6 +17,14 @@ class ProductController extends Controller
         $category = null;
         $products = Product::where('status', 'active');
         
+        // Search functionality
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $products->where(function($query) use ($searchTerm) {
+                $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+            });
+        }
+        
         // Category filter
         if ($request->has('category')) {
             $category = Category::where('slug', $request->category)->first();

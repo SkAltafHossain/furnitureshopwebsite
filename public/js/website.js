@@ -20,8 +20,13 @@ $(document).ready(function() {
         $('body').css('overflow', 'auto');
     });
     
-    // Close mobile nav when clicking on a link
-    $('.mobile-nav-menu .nav-link').click(function() {
+    // Close mobile nav when clicking on a link (except category dropdown items)
+    $('.mobile-nav-menu .nav-link').click(function(e) {
+        // Don't close if it's a category dropdown toggle or dropdown item
+        if ($(this).hasClass('dropdown-item') || $(this).next().hasClass('dropdown-menu')) {
+            return;
+        }
+        
         $('#mobileNav').removeClass('active');
         $('#mobileNavOverlay').removeClass('active');
         $('body').css('overflow', 'auto');
