@@ -349,13 +349,11 @@
                                                             <small class="text-muted">{{ $review->created_at->format('M d, Y') }}</small>
                                                         </div>
                                                         @if(auth()->check() && $review->canBeDeletedBy(auth()->id()))
-                                                            <form action="{{ route('reviews.destroy', $review->id) }}" method="POST" class="d-inline">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this review?')">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </button>
-                                                            </form>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger delete-review" 
+                                                                    data-review-id="{{ $review->id }}" 
+                                                                    data-review-url="{{ route('reviews.destroy', $review->id) }}">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
                                                         @endif
                                                     </div>
                                                     @if($review->comment)
@@ -424,8 +422,8 @@
                         <div class="rating-input d-flex gap-1">
                             @for($i = 1; $i <= 5; $i++)
                                 <input type="radio" id="star{{ $i }}" name="rating" value="{{ $i }}" class="d-none" required>
-                                <label for="star{{ $i }}" class="star-rating text-warning me-1" style="cursor: pointer; font-size: 1.8rem;">
-                                    <i class="fas fa-star"></i>
+                                <label for="star{{ $i }}" class="star-rating me-1" style="cursor: pointer; font-size: 1.8rem;">
+                                    <i class="far fa-star"></i>
                                 </label>
                             @endfor
                         </div>
@@ -687,21 +685,212 @@ $(document).ready(function() {
         });
     });
     
-    // Star rating functionality
-    $('.star-rating').click(function() {
-        var rating = $(this).prev('input[type="radio"]').val();
-        $('.star-rating').each(function(index) {
-            if (index < rating) {
-                $(this).find('i').removeClass('far').addClass('fas');
-            } else {
-                $(this).find('i').removeClass('fas').addClass('far');
+    // Enhanced star rating functionality
+    function initRating() {
+        const ratingInput = document.querySelector('#reviewModal .rating-input');
+        if (!ratingInput) return;
+        
+        const stars = Array.from(ratingInput.querySelectorAll('.star-rating'));
+        const radioInputs = Array.from(ratingInput.querySelectorAll('input[type="radio"]'));
+        
+        // Initialize all stars to empty
+        stars.forEach(star => {
+            star.classList.remove('text-warning');
+            const icon = star.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
             }
         });
+        
+        // Handle hover and click for each star
+        stars.forEach((star, index) => {
+            // Hover in
+            star.addEventListener('mouseenter', function() {
+                const hoverIndex = stars.indexOf(star);
+                
+                // Highlight all stars up to the hovered one
+                stars.forEach((s, i) => {
+                    const icon = s.querySelector('i');
+                    if (i <= hoverIndex) {
+                        s.classList.add('text-warning');
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    } else {
+                        s.classList.remove('text-warning');
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                });
+            });
+            
+            // Hover out
+            star.addEventListener('mouseleave', function() {
+                const checked = ratingInput.querySelector('input[type="radio"]:checked');
+                if (!checked) {
+                    // If nothing is selected, reset all stars
+                    stars.forEach(s => {
+                        s.classList.remove('text-warning');
+                        const icon = s.querySelector('i');
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    });
+                } else {
+                    // Show the selected rating
+                    const value = parseInt(checked.value);
+                    
+                    stars.forEach((s, i) => {
+                        const icon = s.querySelector('i');
+                        if (i < value) {
+                            s.classList.add('text-warning');
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                        } else {
+                            s.classList.remove('text-warning');
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                        }
+                    });
+                }
+            });
+            
+            // Click
+            star.addEventListener('click', function() {
+                const radio = this.previousElementSibling;
+                if (radio && radio.type === 'radio') {
+                    radio.checked = true;
+                    // Trigger change event to update the display
+                    const event = new Event('change');
+                    radio.dispatchEvent(event);
+                }
+            });
+            
+            // Handle radio button change
+            if (radioInputs[index]) {
+                radioInputs[index].addEventListener('change', function() {
+                    const value = parseInt(this.value);
+                    
+                    stars.forEach((s, i) => {
+                        const icon = s.querySelector('i');
+                        if (i < value) {
+                            s.classList.add('text-warning');
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                        } else {
+                            s.classList.remove('text-warning');
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                        }
+                    });
+                });
+            }
+        });
+    }
+    
+    // Initialize rating when review modal is shown
+    $('#reviewModal').on('show.bs.modal', function () {
+        // Small delay to ensure the modal is fully shown
+        setTimeout(initRating, 100);
+    });
+    
+    // Form validation
+    $('form').on('submit', function(e) {
+        const ratingInput = this.querySelector('input[name="rating"]:checked');
+        if (!ratingInput) {
+            e.preventDefault();
+            showToast('Please select a rating', 'error');
+            return false;
+        }
     });
     
     // Initialize star rating display
     $('.star-rating').each(function(index) {
         $(this).find('i').removeClass('fas').addClass('far');
+    });
+    
+    // Function to update review count and rating display
+    function updateReviewStats() {
+        // Get the current product ID from the URL
+        const productId = '{{ $product->id }}';
+        
+        // Make an AJAX call to get updated review stats
+        $.get('{{ route("products.show", $product->slug) }}', function(html) {
+            // Create a temporary div to parse the HTML response
+            const tempDiv = $('<div>').html(html);
+            
+            // Update the review count in the product header
+            const newReviewCount = tempDiv.find('#reviews-tab').text().match(/\(([^)]+)\)/)[1];
+            $('.product-header .text-muted.small').html(
+                $('.product-header .text-muted.small', tempDiv).html()
+            );
+            
+            // Update the reviews tab count
+            $('#reviews-tab').html(
+                $('<i class="fas fa-star me-2"></i>').get(0).outerHTML + 'Reviews (' + newReviewCount + ')'
+            );
+            
+            // Update the reviews summary section
+            $('.reviews-summary').html($('.reviews-summary', tempDiv).html());
+            
+            // Update the rating display
+            const ratingText = $('.product-header .stars', tempDiv).html();
+            $('.product-header .stars').html(ratingText);
+            
+            // Update the average rating display
+            const averageRating = tempDiv.find('.reviews-summary .average-rating').text();
+            $('.reviews-summary .average-rating').text(averageRating);
+            
+            // Update the rating bars
+            $('.rating-bars').html($('.rating-bars', tempDiv).html());
+        });
+    }
+    
+    // Handle review deletion
+    $(document).on('click', '.delete-review', function() {
+        if (!confirm('Are you sure you want to delete this review?')) {
+            return false;
+        }
+        
+        const button = $(this);
+        const reviewId = button.data('review-id');
+        const url = button.data('review-url');
+        const reviewItem = button.closest('.review-item');
+        
+        // Show loading state
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+        
+        // Send delete request
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                _method: 'DELETE'
+            },
+            success: function(response) {
+                // Remove the review item with animation
+                reviewItem.fadeOut(300, function() {
+                    $(this).remove();
+                    
+                    // Update reviews count and stats
+                    updateReviewStats();
+                    
+                    // Update reviews list if empty
+                    const reviewsCount = $('.review-item').length;
+                    if (reviewsCount === 0) {
+                        $('.reviews-list').html('<p class="text-muted text-center">No reviews yet. Be the first to review this product!</p>');
+                    }
+                    
+                    // Show success message
+                    showToast('Review deleted successfully', 'success');
+                });
+            },
+            error: function(xhr) {
+                button.prop('disabled', false).html('<i class="fas fa-trash"></i>');
+                const errorMessage = xhr.responseJSON?.message || 'Failed to delete review. Please try again.';
+                showToast(errorMessage, 'error');
+            }
+        });
     });
 });
 </script>
