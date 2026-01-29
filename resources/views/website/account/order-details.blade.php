@@ -129,7 +129,15 @@
                             
                             <!-- Item Total -->
                             <div class="text-end">
-                                <div class="fw-bold">₹{{ number_format($item->total, 2) }}</div>
+                                <div class="fw-bold mb-2">₹{{ number_format($item->total, 2) }}</div>
+                                @if(($order->order_status === 'delivered' || $order->order_status === 'delivered_confirmed') && $item->product)
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#reviewModal{{ $item->product_id }}"
+                                            title="Write a review">
+                                        <i class="fas fa-star me-1"></i> Write Review
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -263,4 +271,212 @@ function confirmDelivery(orderId) {
     }
 }
 </script>
+
+@if(auth()->check())
+    @foreach($order->items as $item)
+        @if($item->product && ($order->order_status === 'delivered' || $order->order_status === 'delivered_confirmed'))
+            <!-- Review Modal for each product -->
+            <div class="modal fade" id="reviewModal{{ $item->product_id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header border-bottom pb-3 px-4 pt-4">
+                            <h5 class="modal-title mb-0">Write a Review</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form action="{{ route('reviews.store', $item->product->slug) }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="order_id" value="{{ $order->id }}">
+                            <div class="modal-body py-4 px-4">
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold mb-3">Rating</label>
+                                    <div class="rating-input d-flex gap-1">
+                                        @for($i = 5; $i >= 1; $i--)
+                                            <input type="radio" id="star{{ $item->product_id }}_{{ $i }}" name="rating" value="{{ $i }}" class="d-none" required>
+                                            <label for="star{{ $item->product_id }}_{{ $i }}" class="star-rating me-1" style="cursor: pointer; font-size: 1.8rem;">
+                                                <i class="far fa-star"></i>
+                                            </label>
+                                        @endfor
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="comment{{ $item->product_id }}" class="form-label fw-semibold mb-2">Comment (Optional)</label>
+                                    <textarea name="comment" id="comment{{ $item->product_id }}" class="form-control" rows="4" 
+                                              placeholder="Share your experience with this product..." maxlength="1000"></textarea>
+                                    <small class="text-muted d-block mt-1">Maximum 1000 characters</small>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-top pt-3 px-4 pb-4">
+                                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary px-4">Submit Review</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
+@endif
+
+@push('scripts')
+<script>
+// Initialize star rating functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to initialize rating for a specific modal
+    function initRating(modal) {
+        const ratingInput = modal.querySelector('.rating-input');
+        if (!ratingInput) return;
+        
+        const stars = Array.from(ratingInput.querySelectorAll('.star-rating'));
+        const radioInputs = Array.from(ratingInput.querySelectorAll('input[type="radio"]'));
+        
+        // Initialize all stars to empty
+        stars.forEach(star => {
+            star.classList.remove('text-warning');
+            const icon = star.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            }
+        });
+        
+        // Handle hover and click for each star
+        stars.forEach((star, index) => {
+            // Hover in
+            star.addEventListener('mouseenter', function() {
+                // Get all stars in reverse order (since they're displayed 5 to 1)
+                const reversedStars = Array.from(stars).reverse();
+                const hoverIndex = reversedStars.indexOf(star);
+                
+                // Highlight all stars up to the hovered one
+                reversedStars.forEach((s, i) => {
+                    const icon = s.querySelector('i');
+                    if (i <= hoverIndex) {
+                        s.classList.add('text-warning');
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    } else {
+                        s.classList.remove('text-warning');
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                });
+            });
+            
+            // Hover out
+            star.addEventListener('mouseleave', function() {
+                const checked = ratingInput.querySelector('input[type="radio"]:checked');
+                if (!checked) {
+                    // If nothing is selected, reset all stars
+                    stars.forEach(s => {
+                        s.classList.remove('text-warning');
+                        const icon = s.querySelector('i');
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    });
+                } else {
+                    // Show the selected rating
+                    const value = parseInt(checked.value);
+                    const reversedStars = Array.from(stars).reverse();
+                    
+                    reversedStars.forEach((s, i) => {
+                        const icon = s.querySelector('i');
+                        if (i < value) {
+                            s.classList.add('text-warning');
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                        } else {
+                            s.classList.remove('text-warning');
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                        }
+                    });
+                }
+            });
+            
+            // Click
+            star.addEventListener('click', function() {
+                const radio = this.previousElementSibling;
+                if (radio && radio.type === 'radio') {
+                    radio.checked = true;
+                    // Trigger change event to update the display
+                    const event = new Event('change');
+                    radio.dispatchEvent(event);
+                }
+            });
+            
+            // Handle radio button change
+            if (radioInputs[index]) {
+                radioInputs[index].addEventListener('change', function() {
+                    const value = parseInt(this.value);
+                    const reversedStars = Array.from(stars).reverse();
+                    
+                    reversedStars.forEach((s, i) => {
+                        const icon = s.querySelector('i');
+                        if (i < value) {
+                            s.classList.add('text-warning');
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                        } else {
+                            s.classList.remove('text-warning');
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                        }
+                    });
+                });
+            }
+        });
+    }
+    
+    // Initialize rating for all modals when they're shown
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('show.bs.modal', function() {
+            // Small delay to ensure the modal is fully shown
+            setTimeout(() => initRating(modal), 100);
+        });
+    });
+    
+    // Form validation
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const ratingInput = this.querySelector('input[name="rating"]:checked');
+            if (!ratingInput) {
+                e.preventDefault();
+                alert('Please select a rating');
+                return false;
+            }
+        });
+    });
+});
+</script>
+@endpush
+
+@push('styles')
+<style>
+    .rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+    
+    .rating-input input[type="radio"] {
+        display: none;
+    }
+    
+    .rating-input label {
+        color: #ddd;
+        font-size: 1.8rem;
+        padding: 0 3px;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .rating-input input[type="radio"]:checked ~ label,
+    .rating-input label:hover,
+    .rating-input label:hover ~ label {
+        color: #ffc107;
+    }
+</style>
+@endpush
+
 @endsection
