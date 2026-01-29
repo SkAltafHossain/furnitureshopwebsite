@@ -67,13 +67,18 @@ class Product extends Model
     {
         if (!$userId) return false;
         
-        return OrderItem::whereHas('order', function ($query) use ($userId) {
+        // Check if user has a delivered order for this product
+        $hasDeliveredOrder = OrderItem::whereHas('order', function ($query) use ($userId) {
             $query->where('user_id', $userId)
                   ->where('order_status', 'delivered_confirmed');
-        })->where('product_id', $this->id)
-          ->whereDoesntHave('product.reviews', function ($query) use ($userId) {
-              $query->where('user_id', $userId);
-          })->exists();
+        })->where('product_id', $this->id)->exists();
+        
+        if (!$hasDeliveredOrder) {
+            return false;
+        }
+        
+        // Check if user has already reviewed this product
+        return !$this->reviews()->where('user_id', $userId)->exists();
     }
 
     public function getFormattedPriceAttribute()

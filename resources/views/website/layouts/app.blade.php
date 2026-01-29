@@ -365,15 +365,15 @@
     <!-- Flash Messages as Toasts -->
     @if(session('success') || session('error'))
         <script>
-        $(document).ready(function() {
+        // Flash messages will be handled after jQuery loads
+        window.flashMessages = {
             @if(session('success'))
-                showToast('{{ session('success') }}', 'success');
+                success: '{{ session('success') }}',
             @endif
-            
             @if(session('error'))
-                showToast('{{ session('error') }}', 'error');
+                error: '{{ session('error') }}',
             @endif
-        });
+        };
         </script>
     @endif
 
@@ -545,5 +545,19 @@
     </script>
     
     @stack('scripts')
+    
+    <!-- Handle Flash Messages -->
+    <script>
+    $(document).ready(function() {
+        if (window.flashMessages) {
+            if (window.flashMessages.success) {
+                showToast(window.flashMessages.success, 'success');
+            }
+            if (window.flashMessages.error) {
+                showToast(window.flashMessages.error, 'error');
+            }
+        }
+    });
+    </script>
 </body>
 </html>

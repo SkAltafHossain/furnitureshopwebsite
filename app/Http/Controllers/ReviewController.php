@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
-    public function store(Request $request, Product $product)
+    public function store(Request $request, $slug)
     {
+        $product = Product::where('slug', $slug)->where('status', 'active')->firstOrFail();
+
         $request->validate([
             'rating' => 'required|integer|between:1,5',
             'comment' => 'nullable|string|max:1000',
@@ -33,9 +35,10 @@ class ReviewController extends Controller
         return back()->with('success', 'Your review has been submitted successfully!');
     }
 
-    public function destroy(Review $review)
+    public function destroy($id)
     {
         $user = Auth::user();
+        $review = Review::findOrFail($id);
         
         if (!$review->canBeDeletedBy($user->id)) {
             return back()->with('error', 'You can only delete your own reviews.');
