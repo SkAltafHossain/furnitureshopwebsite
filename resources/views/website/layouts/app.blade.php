@@ -20,7 +20,44 @@
     <!-- Main Header -->
     <header class="main-header bg-white shadow-sm sticky-top">
         <div class="container-fluid">
-            <div class="row align-items-center py-2">
+            <!-- First Row: Logo (Centered) -->
+            <div class="row justify-content-center py-2 d-md-none">
+                <div class="col-auto">
+                    <a href="{{ route('home') }}" class="brand-logo text-decoration-none d-flex align-items-center">
+                        <div class="logo-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div>
+                            <h4 class="brand-name mb-0 text-primary">Local Shop</h4>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Second Row: Navigation Menu (Left) + Search (Right) -->
+            <div class="row align-items-center py-2 d-md-none">
+                <!-- Mobile Menu Toggle -->
+                <div class="col-auto">
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <!-- Simple Search Field -->
+                <div class="col">
+                    <div class="search-container">
+                        <form class="search-form d-flex" action="{{ route('products.index') }}" method="GET">
+                            <input type="search" class="form-control" name="search" placeholder="Search products..." value="{{ request('search') }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Desktop Layout (Hidden on Mobile) -->
+            <div class="row align-items-center py-3 d-none d-md-flex">
                 <!-- Logo -->
                 <div class="col-auto">
                     <a href="{{ route('home') }}" class="brand-logo text-decoration-none d-flex align-items-center">
@@ -64,57 +101,31 @@
                     </nav>
                 </div>
                 
-                <!-- Large Search Bar -->
+                <!-- Simple Search Field -->
                 <div class="col">
                     <div class="search-container">
                         <form class="search-form d-flex" action="{{ route('products.index') }}" method="GET">
-                            <input type="search" class="form-control form-control-sm" name="search" placeholder="Search for products..." value="{{ request('search') }}">
-                            <button class="btn btn-outline-primary" type="submit">
-                                <i class="fas fa-search"></i> Search
+                            <input type="search" class="form-control" name="search" placeholder="Search products..." value="{{ request('search') }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
                             </button>
                         </form>
                     </div>
                 </div>
                 
-                <!-- Cart -->
+                <!-- Profile Dropdown -->
                 <div class="col-auto">
-                    @if(auth()->check())
-                        <a href="{{ route('cart.index') }}" class="btn btn-outline-primary position-relative">
-                            <i class="fas fa-shopping-bag"></i>
-                            Cart
-                            @if(session('cart'))
-                                <span class="action-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                                    {{ count(session('cart')) }}
-                                </span>
-                            @else
-                                <span class="action-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; display: none;">
-                                    0
-                                </span>
-                            @endif
-                        </a>
-                    @else
-                        <button class="btn btn-outline-primary position-relative" onclick="$('#loginModal').modal('show');">
-                            <i class="fas fa-shopping-bag"></i>
-                            Cart
-                            <span class="action-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; display: none;">
-                                0
-                            </span>
-                        </button>
-                    @endif
-                </div>
-                
-                <!-- Account Section -->
-                <div class="col-auto">
-                    <div class="header-actions d-flex align-items-center">
+                    <div class="profile-dropdown">
                         @if(auth()->check())
                             <div class="dropdown">
-                                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-user me-1"></i> {{ auth()->user()->name }}
+                                <button class="btn btn-outline-primary dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user"></i>
+                                    <span class="d-none d-md-inline">{{ auth()->user()->name }}</span>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ route('account.index') }}"><i class="fas fa-user me-2"></i> My Account</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('account.index', ['tab' => 'wishlist']) }}"><i class="fas fa-heart me-2"></i> My Wishlist</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('account.index') }}"><i class="fas fa-user me-2"></i> Profile</a></li>
                                     <li><a class="dropdown-item" href="{{ route('account.orders') }}"><i class="fas fa-shopping-bag me-2"></i> My Orders</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('account.index', ['tab' => 'wishlist']) }}"><i class="fas fa-heart me-2"></i> Wishlist</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
                                 </ul>
@@ -123,22 +134,136 @@
                                 @csrf
                             </form>
                         @else
-                            <button class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
-                                <i class="fas fa-sign-in-alt me-1"></i> Login
-                            </button>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">
-                                <i class="fas fa-user-plus me-1"></i> Register
-                            </button>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user"></i>
+                                    <span class="d-none d-md-inline">Account</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="fas fa-sign-in-alt me-2"></i> Login</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#registerModal"><i class="fas fa-user-plus me-2"></i> Register</a></li>
+                                </ul>
+                            </div>
                         @endif
                     </div>
                 </div>
-            </row>
+                
+                <!-- Cart -->
+                <div class="col-auto d-none d-md-block">
+                    @if(auth()->check())
+                        <a href="{{ route('cart.index') }}" class="btn btn-outline-primary position-relative">
+                            <i class="fas fa-shopping-cart"></i>
+                            @if(session('cart'))
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                    {{ count(session('cart')) }}
+                                </span>
+                            @endif
+                        </a>
+                    @else
+                        <button class="btn btn-outline-primary position-relative" onclick="$('#loginModal').modal('show');">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                    @endif
+                </div>
+            </div>
         </div>
     </header>
 
+    <!-- Mobile Navigation Sidebar -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+    <nav class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-header">
+            <div class="d-flex align-items-center">
+                <div class="logo-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                    <i class="fas fa-store"></i>
+                </div>
+                <h5 class="mb-0 text-primary">Local Shop</h5>
+            </div>
+            <button class="mobile-nav-close" id="mobileNavClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mobile-nav-menu">
+            <!-- Search in Sidebar -->
+            <div class="mobile-search">
+                <form class="search-form d-flex" action="{{ route('products.index') }}" method="GET">
+                    <input type="search" class="form-control" name="search" placeholder="Search products..." value="{{ request('search') }}">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Navigation Links -->
+            <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">
+                <i class="fas fa-home me-2"></i> Home
+            </a>
+            <div class="nav-item">
+                <a href="#" class="nav-link" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'; return false;">
+                    <i class="fas fa-list me-2"></i> Categories <i class="fas fa-chevron-down ms-auto"></i>
+                </a>
+                <div class="dropdown-menu" style="display: none;">
+                    @php
+                        $categories = \App\Models\Category::where('status', 'active')->take(6)->get();
+                    @endphp
+                    @foreach($categories as $category)
+                        <a href="{{ route('category.show', $category->slug) }}" class="dropdown-item">{{ $category->name }}</a>
+                    @endforeach
+                </div>
+            </div>
+            <a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}">
+                <i class="fas fa-th-large me-2"></i> Products
+            </a>
+            
+            <!-- Cart Link -->
+            <a href="{{ auth()->check() ? route('cart.index') : '#' }}" class="nav-link" @if(!auth()->check()) onclick="$('#loginModal').modal('show'); return false;" @endif>
+                <i class="fas fa-shopping-cart me-2"></i> Cart
+                @if(auth()->check() && session('cart'))
+                    <span class="badge bg-primary rounded-pill ms-auto">{{ count(session('cart')) }}</span>
+                @endif
+            </a>
+            
+            <!-- Profile Section -->
+            <div class="mobile-profile-section">
+                @if(auth()->check())
+                    <div class="profile-info">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="profile-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">{{ auth()->user()->name }}</div>
+                                <div class="text-muted small">{{ auth()->user()->email }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{{ route('account.index') }}" class="nav-link">
+                        <i class="fas fa-user me-2"></i> My Profile
+                    </a>
+                    <a href="{{ route('account.orders') }}" class="nav-link">
+                        <i class="fas fa-shopping-bag me-2"></i> My Orders
+                    </a>
+                    <a href="{{ route('account.index', ['tab' => 'wishlist']) }}" class="nav-link">
+                        <i class="fas fa-heart me-2"></i> Wishlist
+                    </a>
+                    <a href="{{ route('logout') }}" class="nav-link text-danger" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                    </a>
+                @else
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login
+                    </a>
+                    <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        <i class="fas fa-user-plus me-2"></i> Register
+                    </a>
+                @endif
+            </div>
+        </div>
+    </nav>
+
     <!-- Login Modal -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body p-0">
                     <div class="row g-0">
@@ -226,7 +351,7 @@
 
     <!-- Register Modal -->
     <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body p-0">
                     <div class="row g-0">
@@ -541,6 +666,86 @@
                 });
             }, 5000);
         }
+    });
+    </script>
+    
+    <!-- Mobile Navigation JavaScript -->
+    <script>
+    function initMobileNavigation() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileNav = document.getElementById('mobileNav');
+        const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+        const mobileNavClose = document.getElementById('mobileNavClose');
+        
+        if (!mobileMenuToggle || !mobileNav || !mobileNavOverlay || !mobileNavClose) {
+            console.log('Mobile navigation elements not found');
+            return;
+        }
+        
+        function openMobileNav() {
+            console.log('Opening mobile nav');
+            mobileNav.style.display = 'block';
+            setTimeout(() => {
+                mobileNav.classList.add('active');
+                mobileNavOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }, 10);
+        }
+        
+        function closeMobileNav() {
+            console.log('Closing mobile nav');
+            mobileNav.classList.remove('active');
+            mobileNavOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                if (!mobileNav.classList.contains('active')) {
+                    mobileNav.style.display = 'none';
+                }
+            }, 300);
+        }
+        
+        mobileMenuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            openMobileNav();
+        });
+        
+        mobileNavClose.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeMobileNav();
+        });
+        
+        mobileNavOverlay.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeMobileNav();
+        });
+        
+        // Close on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
+                closeMobileNav();
+            }
+        });
+        
+        // Close nav when clicking on links (but not category dropdown toggles)
+        const navLinks = mobileNav.querySelectorAll('.nav-link:not([onclick])');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                closeMobileNav();
+            });
+        });
+        
+        // Close nav when clicking on dropdown items
+        const dropdownItems = mobileNav.querySelectorAll('.dropdown-item');
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', function() {
+                closeMobileNav();
+            });
+        });
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        initMobileNavigation();
     });
     </script>
     

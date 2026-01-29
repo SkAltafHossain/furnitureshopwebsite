@@ -7,6 +7,26 @@ $(document).ready(function() {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     });
     
+    // Mobile Navigation
+    $('#mobileMenuToggle').click(function() {
+        $('#mobileNav').addClass('active');
+        $('#mobileNavOverlay').addClass('active');
+        $('body').css('overflow', 'hidden');
+    });
+    
+    $('#mobileNavClose, #mobileNavOverlay').click(function() {
+        $('#mobileNav').removeClass('active');
+        $('#mobileNavOverlay').removeClass('active');
+        $('body').css('overflow', 'auto');
+    });
+    
+    // Close mobile nav when clicking on a link
+    $('.mobile-nav-menu .nav-link').click(function() {
+        $('#mobileNav').removeClass('active');
+        $('#mobileNavOverlay').removeClass('active');
+        $('body').css('overflow', 'auto');
+    });
+    
     // Auto-hide flash messages after 5 seconds
     setTimeout(function() {
         $('.alert').fadeOut('slow');
