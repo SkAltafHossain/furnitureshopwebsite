@@ -175,33 +175,144 @@ $(document).ready(function() {
         
         $.get('{{ route("admin.orders.show", ":id") }}'.replace(':id', id))
             .done(function(data) {
+                // Build order items HTML
+                var itemsHtml = '';
+                if (data.items && data.items.length > 0) {
+                    itemsHtml = `
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    data.items.forEach(function(item) {
+                        itemsHtml += `
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="ms-3">
+                                            <h6 class="mb-0">${item.product ? item.product.name : 'Product not found'}</h6>
+                                            ${item.product ? `<small class="text-muted">SKU: ${item.product.sku || 'N/A'}</small>` : ''}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end">₹${parseFloat(item.price).toFixed(2)}</td>
+                                <td class="text-center">${item.quantity}</td>
+                                <td class="text-end">₹${parseFloat(item.total).toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    itemsHtml += `
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3" class="text-end">Subtotal:</th>
+                                        <td class="text-end">₹${parseFloat(data.total_amount).toFixed(2)}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    itemsHtml = '<div class="alert alert-info">No items found in this order.</div>';
+                }
+
+                // Format status badge
+                var statusBadges = {
+                    'pending': 'bg-warning',
+                    'processing': 'bg-info',
+                    'shipped': 'bg-primary',
+                    'delivered': 'bg-success',
+                    'delivered_confirmed': 'bg-success',
+                    'cancelled': 'bg-danger'
+                };
+                var statusText = data.order_status === 'delivered_confirmed' ? 'Delivered' : data.order_status.charAt(0).toUpperCase() + data.order_status.slice(1);
+                var statusBadge = `<span class="badge ${statusBadges[data.order_status] || 'bg-secondary'}">${statusText}</span>`;
+                
+                // Format payment status
+                var paymentStatus = data.payment_status ? data.payment_status.charAt(0).toUpperCase() + data.payment_status.slice(1) : 'N/A';
+
                 var html = `
                     <div class="row">
+                        <!-- Left Column: Order Information -->
                         <div class="col-md-6">
-                            <h6 class="order-section-title order-info">Order Information</h6>
-                            <p><strong>Order ID:</strong> ${data.order_id}</p>
-                            <p><strong>Customer Name:</strong> ${data.customer_name}</p>
-                            <p><strong>Customer Email:</strong> ${data.customer_email}</p>
-                            <p><strong>Customer Phone:</strong> ${data.customer_phone}</p>
-                            <p><strong>Total Amount:</strong> ₹${parseFloat(data.total_amount).toFixed(2)}</p>
-                            <p><strong>Payment Type:</strong> ${data.payment_method ? data.payment_method.toUpperCase() : 'N/A'}</p>
-                            <p><strong>Payment Status:</strong> ${data.payment_status ? data.payment_status.charAt(0).toUpperCase() + data.payment_status.slice(1) : 'N/A'}</p>
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Order Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Order ID:</strong> ${data.order_id}</p>
+                                    <p><strong>Customer Name:</strong> ${data.customer_name}</p>
+                                    <p><strong>Customer Email:</strong> ${data.customer_email}</p>
+                                    <p><strong>Customer Phone:</strong> ${data.customer_phone}</p>
+                                    <hr>
+                                    <p><strong>Payment Method:</strong> ${data.payment_method ? data.payment_method.toUpperCase() : 'N/A'}</p>
+                                    <p class="mb-0"><strong>Total Amount:</strong> ₹${parseFloat(data.total_amount).toFixed(2)}</p>
+                                </div>
+                            </div>
                         </div>
+                        
+                        <!-- Right Column: Status and Delivery Address -->
                         <div class="col-md-6">
-                            <h6 class="order-section-title delivery-address">Delivery Address</h6>
-                            ${data.address ? `
-                                <p class="mb-0"><strong>${data.customer_name}</strong></p>
-                                <p class="mb-0">${data.customer_phone}</p>
-                                <p class="mb-0">
-                                    ${data.address.address_line1}${data.address.address_line2 ? ', ' + data.address.address_line2 : ''}, 
-                                    ${data.address.city}, ${data.address.state} - ${data.address.postal_code}, ${data.address.country}
-                                </p>
-                            ` : '<p>No address found</p>'}
+                            <!-- Status Card -->
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Order Status</h6>
+                                    ${statusBadge}
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <strong>Payment Status:</strong> ${paymentStatus}
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Order Date:</strong> ${new Date(data.created_at).toLocaleString()}
+                                    </div>
+                                    <div class="mb-0">
+                                        <strong>Last Updated:</strong> ${new Date(data.updated_at).toLocaleString()}
+                                    </div>
+                                </div>
+                            </div>
                             
-                            <h6 class="order-section-title status-dates mt-4">Status & Dates</h6>
-                            <p><strong>Order Status:</strong> ${data.order_status.charAt(0).toUpperCase() + data.order_status.slice(1)}</p>
-                            <p><strong>Order Date:</strong> ${new Date(data.created_at).toLocaleString()}</p>
-                            <p><strong>Last Updated:</strong> ${new Date(data.updated_at).toLocaleString()}</p>
+                            <!-- Delivery Address Card -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Delivery Address</h6>
+                                </div>
+                                <div class="card-body">
+                                    ${data.address ? `
+                                        <p class="mb-1"><strong>${data.customer_name}</strong></p>
+                                        <p class="mb-1">${data.customer_phone}</p>
+                                        <p class="mb-1">${data.address.address_line1}</p>
+                                        ${data.address.address_line2 ? `<p class="mb-1">${data.address.address_line2}</p>` : ''}
+                                        <p class="mb-1">
+                                            ${data.address.city}, ${data.address.state} - ${data.address.postal_code}
+                                        </p>
+                                        ${data.address.country ? `<p class="mb-0">${data.address.country}</p>` : ''}
+                                    ` : '<p class="mb-0">No address found</p>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Full Width: Order Items -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Order Items</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    ${itemsHtml}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -250,43 +361,10 @@ $(document).ready(function() {
                         errorMessages.push(errors[key][0]);
                     }
                     alert('Validation errors:\n' + errorMessages.join('\n'));
-                } else {
-                    alert('Error occurred while updating order status.');
                 }
             }
         });
-    });
-    
-    // Real-time updates using Server-Sent Events
-    if (typeof(EventSource) !== "undefined") {
-        var eventSource = new EventSource("{{ route('admin.orders.updates') }}");
-        
-        eventSource.onmessage = function(event) {
-            var data = JSON.parse(event.data);
-            
-            if (data.type === 'order_update') {
-                // Reload the DataTable to show updated orders
-                table.ajax.reload();
-                
-                // Show notification for updated orders
-                data.orders.forEach(function(order) {
-                    showNotification(`Order #${order.order_id} has been updated to: ${order.order_status}`);
-                });
-            }
-        };
-        
-        eventSource.onerror = function(event) {
-            console.error('EventSource failed:', event);
-            // Try to reconnect after 5 seconds
-            setTimeout(function() {
-                eventSource.close();
-                location.reload(); // Reload page to restart SSE
-            }, 5000);
-        };
-    } else {
-        console.log("Your browser does not support server-sent events.");
-    }
-    
+
     // Function to show notifications
     function showNotification(message) {
         // Create notification element
@@ -308,6 +386,7 @@ $(document).ready(function() {
             }
         }, 5000);
     }
+    });
 });
 </script>
 @endpush

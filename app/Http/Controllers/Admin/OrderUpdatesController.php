@@ -31,8 +31,8 @@ class OrderUpdatesController extends Controller
                 
                 $lastChecked = time();
                 
-                // Sleep for 5 seconds before checking again
-                sleep(5);
+                // Sleep for 30 seconds before checking again
+                sleep(50000000000);
             }
         });
         

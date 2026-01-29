@@ -93,7 +93,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('/orders/{id}/update-status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
         
         // Real-time updates
-        Route::get('/orders/updates', [App\Http\Controllers\Admin\OrderUpdatesController::class, 'stream'])->name('orders.updates');
 
         // User Management
         Route::get('/users', [App\Http\Controllers\Admin\UserManagementController::class, 'index'])->name('users.index');
