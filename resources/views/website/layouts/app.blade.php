@@ -512,7 +512,7 @@
         <div class="container">
             <div class="row">
                 <!-- About Section -->
-                <div class="col-lg-4 mb-4">
+                <div class="col-lg-3 col-md-6 mb-4">
                     <div class="footer-brand">
                         <div class="d-flex align-items-center mb-3">
                             <div class="footer-logo bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
@@ -521,37 +521,30 @@
                             <h4 class="mb-0">Local Shop</h4>
                         </div>
                         <p class="text-muted">Your trusted local e-commerce store for quality products at affordable prices. Shop with confidence and enjoy exceptional service.</p>
-                        <div class="social-links mt-3">
-                            <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
-                            <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
-                            <a href="#" class="text-white"><i class="fab fa-linkedin-in"></i></a>
-                        </div>
                     </div>
                 </div>
                 
                 <!-- Quick Links -->
-                <div class="col-lg-2 col-md-6 mb-4">
+                <div class="col-lg-6 col-md-6 mb-4">
                     <h5 class="footer-title">Quick Links</h5>
-                    <ul class="footer-links">
-                        <li><a href="{{ route('home') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Home</a></li>
-                        <li><a href="{{ route('products.index') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Products</a></li>
-                        <li><a href="{{ route('page.about') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>About Us</a></li>
-                        <li><a href="{{ route('page.terms') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Terms</a></li>
-                        <li><a href="{{ route('page.privacy') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Privacy</a></li>
-                    </ul>
-                </div>
-                
-                <!-- Customer Service -->
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <h5 class="footer-title">Customer Service</h5>
-                    <ul class="footer-links">
-                        <li><a href="#" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Contact Us</a></li>
-                        <li><a href="#" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Shipping Info</a></li>
-                        <li><a href="#" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Returns</a></li>
-                        <li><a href="#" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>FAQs</a></li>
-                        <li><a href="#" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Size Guide</a></li>
-                    </ul>
+                    <div class="row">
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-4 mb-3">
+                            <ul class="footer-links">
+                                <li><a href="{{ route('home') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Home</a></li>
+                                <li><a href="{{ route('products.index') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Products</a></li>
+                                <li><a href="{{ route('account.index') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Profile</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-sm-4 mb-3">
+                            <ul class="footer-links">
+                                <li><a href="{{ route('page.terms') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Terms</a></li>
+                                <li><a href="{{ route('page.privacy') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>Privacy</a></li>
+                                <li><a href="{{ route('page.about') }}" class="text-white-50"><i class="fas fa-chevron-right me-2"></i>About Us</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-sm-2"></div>
+                    </div>
                 </div>
                 
                 <!-- Contact Info -->
@@ -570,21 +563,15 @@
                             <i class="fas fa-envelope me-2 text-primary"></i>
                             info@localshop.com
                         </p>
-                        
-                        <!-- Payment Methods -->
-                        <div class="payment-methods">
-                            <p class="text-white-50 small mb-2">We Accept:</p>
-                            <div class="payment-icons">
-                                <i class="fab fa-cc-visa text-white me-2"></i>
-                                <i class="fab fa-cc-mastercard text-white me-2"></i>
-                                <i class="fab fa-cc-paypal text-white me-2"></i>
-                                <i class="fas fa-money-bill-wave text-white"></i>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
-            
+            <div class="social-links mt-3">
+                <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-white"><i class="fab fa-linkedin-in"></i></a>
+            </div>
             <!-- Bottom Footer -->
             <div class="footer-bottom border-top border-secondary pt-4 mt-4">
                 <div class="row">

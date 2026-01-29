@@ -854,12 +854,14 @@ body {
     font-weight: 600;
     margin-bottom: 1.5rem;
     font-size: 1.1rem;
+    text-align: center;
 }
 
 .footer-links {
     list-style: none;
     padding: 0;
     margin: 0;
+    text-align: center;
 }
 
 .footer-links li {
@@ -878,14 +880,20 @@ body {
     padding-left: 5px;
 }
 
+.social-links {
+    text-align: center;
+}
+
 .social-links a {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
     height: 40px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     text-align: center;
-    line-height: 40px;
+    text-decoration: none;
     transition: all 0.3s ease;
 }
 
@@ -907,6 +915,10 @@ body {
 
 .footer-bottom {
     border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.footer .text-muted {
+    color: rgba(255, 255, 255, 0.7) !important;
 }
 
 /* Back to Top Button */
