@@ -36,6 +36,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/my-orders/{id}/confirm-delivery', [App\Http\Controllers\Website\AccountController::class, 'confirmDelivery'])->name('account.order-confirm-delivery');
     Route::post('/addresses', [App\Http\Controllers\Website\CheckoutController::class, 'storeAddress'])->name('addresses.store');
     
+    // Review Routes
+    Route::post('/products/{slug}/reviews', [App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('/reviews/{id}', [App\Http\Controllers\ReviewController::class, 'destroy'])->name('reviews.destroy');
+    
     // Wishlist Routes
     Route::post('/wishlist/toggle', [App\Http\Controllers\WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::delete('/wishlist/{id}', [App\Http\Controllers\Website\AccountController::class, 'removeFromWishlist'])->name('wishlist.remove');

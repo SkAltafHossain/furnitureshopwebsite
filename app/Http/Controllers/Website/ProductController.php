@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Wishlist;
+use App\Models\Review;
+use App\Http\Controllers\ReviewController;
 
 class ProductController extends Controller
 {
@@ -83,13 +85,29 @@ class ProductController extends Controller
         // Check if product is in user's wishlist
         $isInWishlist = false;
         $wishlistProductIds = [];
+        $canReview = false;
+        
         if (auth()->check()) {
             $wishlistProductIds = Wishlist::where('user_id', auth()->id())
                                           ->pluck('product_id')
                                           ->toArray();
             $isInWishlist = in_array($product->id, $wishlistProductIds);
+            $canReview = $product->canBeReviewedBy(auth()->id());
         }
+        
+        // Get product reviews with user info
+        $reviews = $product->reviews()
+                          ->with('user')
+                          ->orderBy('created_at', 'desc')
+                          ->paginate(10);
             
-        return view('website.products.show', compact('product', 'relatedProducts', 'isInWishlist', 'wishlistProductIds'));
+        return view('website.products.show', compact(
+            'product', 
+            'relatedProducts', 
+            'isInWishlist', 
+            'wishlistProductIds',
+            'reviews',
+            'canReview'
+        ));
     }
 }
