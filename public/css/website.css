@@ -7,6 +7,21 @@ body {
     line-height: 1.6;
 }
 
+/* Description Text Styles */
+.description-text {
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+.description-text p {
+    margin: 0 0 1rem;
+    color: #333 !important;
+    line-height: 1.6;
+}
+
 /* Top Bar */
 .top-bar {
     font-size: 0.875rem;

@@ -182,7 +182,7 @@
                 <div class="description-section mb-4">
                     <h6 class="section-title mb-3">Description</h6>
                     <div class="description-content">
-                        <p class="text-muted mb-0">{{ $product->description }}</p>
+                        <p class="text-muted mb-0">{!! $product->description !!}</p>
                     </div>
                 </div>
                 
@@ -227,13 +227,8 @@
                             <div class="tab-pane fade show active" id="description" role="tabpanel">
                                 <div class="p-4">
                                     <h5 class="mb-3">Product Description</h5>
-                                    <div class="description-text">
-                                        <p>{{ $product->description }}</p>
-                                        @if($product->description)
-                                            <p>{{ $product->description }}</p>
-                                        @else
-                                            <p class="text-muted">No additional description available for this product.</p>
-                                        @endif
+                                    <div class="description-text" style="color: #333 !important; font-size: 1rem !important; line-height: 1.6 !important; display: block !important; visibility: visible !important;">
+                                        {!! $product->description !!}
                                     </div>
                                 </div>
                             </div>
