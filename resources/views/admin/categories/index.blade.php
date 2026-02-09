@@ -46,8 +46,8 @@
                     <input type="hidden" id="category_id" name="category_id">
                     
                     <div class="mb-3">
-                        <label for="category_name" class="form-label">Category Name *</label>
-                        <input type="text" class="form-control" id="category_name" name="category_name" required>
+                        <label for="name" class="form-label">Category Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
                         <div class="form-text">Slug will be automatically generated from the category name</div>
                     </div>
                     
@@ -169,7 +169,7 @@ $(document).ready(function() {
         $.get('{{ route("admin.categories.edit", ":id") }}'.replace(':id', id))
             .done(function(data) {
                 $('#category_id').val(data.id);
-                $('#category_name').val(data.name);
+                $('#name').val(data.name);
                 $('#status').val(data.status);
                 
                 if (data.image) {

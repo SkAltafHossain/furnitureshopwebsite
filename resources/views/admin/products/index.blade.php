@@ -50,11 +50,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="category_id" class="form-label">Category *</label>
-                                <select class="form-select" id="category_id" name="category_id" required>
-                                    <option value="">Select Category</option>
+                                <label for="category_id" class="form-label">Product Category *</label>
+                                <select class="form-select" id="category_id" name="category_id" required style="color: black !important;">
+                                    <option value="" style="color: black !important;">Select Category</option>
                                     @foreach($categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->category_name }}</option>
+                                        <option value="{{ $category->id }}" style="color: black !important;">{{ $category->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -92,8 +92,8 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label for="stock_quantity" class="form-label">Stock Quantity *</label>
-                                <input type="number" class="form-control" id="stock_quantity" name="stock_quantity" 
+                                <label for="stock" class="form-label">Stock Quantity *</label>
+                                <input type="number" class="form-control" id="stock" name="stock" 
                                        min="0" required>
                             </div>
                             
