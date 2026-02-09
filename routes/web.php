@@ -52,14 +52,16 @@ Route::get('/privacy', [App\Http\Controllers\Website\PageController::class, 'pri
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
+    // Admin login route (outside guest middleware to allow redirect logic)
+    Route::get('/login', [App\Http\Controllers\Admin\AdminAuthController::class, 'showLoginForm'])->name('login');
+    
     // Guest routes for admin
-    Route::middleware('guest:admin')->group(function () {
-        Route::get('/login', [App\Http\Controllers\Admin\AdminAuthController::class, 'showLoginForm'])->name('login');
+    Route::middleware('admin.guest')->group(function () {
         Route::post('/login', [App\Http\Controllers\Admin\AdminAuthController::class, 'login']);
     });
 
     // Authenticated admin routes
-    Route::middleware('auth:admin')->group(function () {
+    Route::middleware('admin.auth')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
         Route::post('/logout', [App\Http\Controllers\Admin\AdminAuthController::class, 'logout'])->name('logout');
 

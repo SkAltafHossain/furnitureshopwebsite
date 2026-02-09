@@ -10,6 +10,16 @@ class AdminAuthController extends Controller
 {
     public function showLoginForm()
     {
+        // Check if user is already authenticated as admin
+        if (Auth::guard('admin')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+        
+        // Check if user is authenticated via web guard and is admin
+        if (Auth::check() && Auth::user()->is_admin) {
+            return redirect()->route('admin.dashboard');
+        }
+        
         return view('admin.auth.login');
     }
 
@@ -32,6 +42,10 @@ class AdminAuthController extends Controller
             }
             
             $request->session()->regenerate();
+            
+            // Also authenticate with web guard for better session persistence
+            Auth::login($user);
+            
             return redirect()->intended(route('admin.dashboard'));
         }
 
