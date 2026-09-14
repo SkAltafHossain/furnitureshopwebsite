@@ -52,6 +52,11 @@ Route::get('/privacy', [App\Http\Controllers\Website\PageController::class, 'pri
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
+    // Redirect /admin to /admin/login
+    Route::get('/', function () {
+        return redirect()->route('admin.login');
+    });
+
     // Admin login route (outside guest middleware to allow redirect logic)
     Route::get('/login', [App\Http\Controllers\Admin\AdminAuthController::class, 'showLoginForm'])->name('login');
     
