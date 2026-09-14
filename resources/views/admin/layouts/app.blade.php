@@ -156,6 +156,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.billing.index') ? 'active' : '' }}" 
+                       href="{{ route('admin.billing.index') }}">
+                        <i class="fas fa-file-invoice"></i> Bills
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" 
                        href="{{ route('admin.users.index') }}">
                         <i class="fas fa-users"></i> Users

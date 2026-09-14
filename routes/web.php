@@ -55,7 +55,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Redirect /admin to /admin/login
     Route::get('/', function () {
         return redirect()->route('admin.login');
-    });
+    })->name('home');
 
     // Admin login route (outside guest middleware to allow redirect logic)
     Route::get('/login', [App\Http\Controllers\Admin\AdminAuthController::class, 'showLoginForm'])->name('login');
@@ -117,6 +117,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/static-pages/{id}/edit', [App\Http\Controllers\Admin\StaticPageController::class, 'edit'])->name('static-pages.edit');
         Route::put('/static-pages/{id}', [App\Http\Controllers\Admin\StaticPageController::class, 'update'])->name('static-pages.update');
         Route::patch('/static-pages/{id}/toggle-status', [App\Http\Controllers\Admin\StaticPageController::class, 'toggleStatus'])->name('static-pages.toggle-status');
+
+        // Billing System
+        Route::get('/billing', [App\Http\Controllers\Admin\BillingController::class, 'history'])->name('billing.index');
+        Route::get('/billing/data', [App\Http\Controllers\Admin\BillingController::class, 'getData'])->name('billing.data');
+        Route::get('/billing/search', [App\Http\Controllers\Admin\BillingController::class, 'searchProducts'])->name('billing.search');
+        Route::get('/billing/product/{id}', [App\Http\Controllers\Admin\BillingController::class, 'getProduct'])->name('billing.product');
+        Route::post('/billing/store', [App\Http\Controllers\Admin\BillingController::class, 'createBill'])->name('billing.store');
+        Route::get('/billing/{id}', [App\Http\Controllers\Admin\BillingController::class, 'showBill'])->name('billing.show');
+        Route::get('/billing/{id}/download', [App\Http\Controllers\Admin\BillingController::class, 'downloadBill'])->name('billing.download');
+        Route::post('/billing/{id}/send', [App\Http\Controllers\Admin\BillingController::class, 'sendBill'])->name('billing.send');
     });
 });
 

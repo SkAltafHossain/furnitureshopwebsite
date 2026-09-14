@@ -20,6 +20,7 @@ class AdminController extends Controller
             'total_categories' => Category::count(),
             'total_products' => Product::count(),
             'total_orders' => Order::count(),
+            'total_bills' => \App\Models\Bill::count(),
             'recent_orders' => Order::latest()->take(5)->get(),
         ];
         
