@@ -77,7 +77,9 @@
                             <h6>Shipping Address</h6>
                             <p class="mb-0"><strong>{{ $order->customer_name }}</strong></p>
                             <p class="mb-0">{{ $order->customer_phone }}</p>
-                            @if($order->address)
+                            @if($order->customer_address)
+                                <p class="mb-0">{{ $order->customer_address }}</p>
+                            @elseif($order->address)
                                 <p class="mb-0">{{ $order->address->full_address }}</p>
                             @else
                                 <p class="text-danger">No address found</p>
@@ -149,11 +151,11 @@
                                 <h6>Order Summary</h6>
                                 <div class="d-flex justify-content-between mb-2">
                                     <span>Subtotal</span>
-                                    <span>₹{{ number_format($order->total_amount, 2) }}</span>
+                                    <span>₹{{ number_format($order->subtotal ?? $order->total_amount, 2) }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-2">
                                     <span>Shipping</span>
-                                    <span>FREE</span>
+                                    <span>{{ ($order->shipping ?? 0) == 0 ? 'FREE' : '₹' . number_format($order->shipping ?? 0, 2) }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-2">
                                     <span>Tax</span>
@@ -176,6 +178,10 @@
                                 </div>
                                 
                                 <div class="mt-3">
+                                    <a href="{{ route('account.order-download', $order->id) }}" class="btn btn-info btn-sm mb-2">
+                                        <i class="fas fa-file-pdf me-1"></i> Download Bill
+                                    </a>
+                                    <br>
                                     @if($order->order_status == 'delivered')
                                         @if($order->canBeConfirmedByUser())
                                             <button class="btn btn-success btn-sm" onclick="confirmDelivery({{ $order->id }})">

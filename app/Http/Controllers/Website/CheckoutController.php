@@ -65,11 +65,27 @@ class CheckoutController extends Controller
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
             'address_id' => [
-                'required',
+                'nullable',
                 Rule::exists('addresses', 'id')->where('user_id', auth()->id())
             ],
+            'address' => 'nullable|string|max:500',
             'payment_method' => 'required|in:COD'
         ]);
+        
+        // Custom validation to ensure either address_id or address is provided
+        $validator->after(function ($validator) use ($request) {
+            if (auth()->check()) {
+                // For logged-in users, require either address_id or address
+                if (empty($request->address_id) && empty($request->address)) {
+                    $validator->errors()->add('address', 'Please select a delivery address or enter one manually');
+                }
+            } else {
+                // For guests, require address
+                if (empty($request->address)) {
+                    $validator->errors()->add('address', 'Please enter a delivery address');
+                }
+            }
+        });
         
         if ($validator->fails()) {
             \Log::error('Checkout validation failed', ['errors' => $validator->errors()->toArray()]);
@@ -85,24 +101,45 @@ class CheckoutController extends Controller
         
         // Get address
         $address = null;
+        $customerAddress = '';
+        
         if ($request->address_id) {
             $address = Address::find($request->address_id);
             if (!$address || $address->user_id !== auth()->id()) {
                 return back()->with('error', 'Invalid address selected');
             }
+            $customerAddress = $address->full_address;
+        } elseif ($request->address) {
+            $customerAddress = $request->address;
         }
         
         DB::beginTransaction();
         
         try {
+            // Validate stock availability
+            foreach ($cart as $productId => $item) {
+                $product = Product::find($productId);
+                if (!$product) {
+                    return back()->with('error', 'One or more products in your cart are no longer available.');
+                }
+                if ($product->stock < $item['quantity']) {
+                    return back()->with('error', "Insufficient stock for {$product->name}. Available: {$product->stock}, Requested: {$item['quantity']}");
+                }
+            }
+            
             // Calculate total
-            $total = 0;
+            $subtotal = 0;
             foreach ($cart as $productId => $item) {
                 $product = Product::find($productId);
                 if ($product) {
-                    $total += $product->price * $item['quantity'];
+                    $price = $product->discount_price ?? $product->price;
+                    $subtotal += $price * $item['quantity'];
                 }
             }
+            
+            // Calculate shipping (free if subtotal > 500, otherwise ₹50)
+            $shipping = $subtotal > 500 ? 0 : 50;
+            $total = $subtotal + $shipping;
             
             // Create order with address_id reference
             $order = Order::create([
@@ -111,24 +148,31 @@ class CheckoutController extends Controller
                 'customer_name' => $request->name,
                 'customer_email' => $request->email,
                 'customer_phone' => $request->phone,
-                'address_id' => $request->address_id,
+                'customer_address' => $customerAddress,
+                'subtotal' => $subtotal,
+                'shipping' => $shipping,
                 'total_amount' => $total,
+                'address_id' => $request->address_id,
                 'payment_method' => $request->payment_method,
                 'order_status' => 'pending',
                 'payment_status' => 'pending',
             ]);
             
-            // Create order items
+            // Create order items and update stock
             foreach ($cart as $productId => $item) {
                 $product = Product::find($productId);
                 if ($product) {
+                    $price = $product->discount_price ?? $product->price;
                     OrderItem::create([
                         'order_id' => $order->id,
                         'product_id' => $productId,
                         'quantity' => $item['quantity'],
-                        'price' => $product->price,
-                        'total' => $product->price * $item['quantity']
+                        'price' => $price,
+                        'total' => $price * $item['quantity']
                     ]);
+                    
+                    // Update product stock
+                    $product->decrement('stock', $item['quantity']);
                 }
             }
             

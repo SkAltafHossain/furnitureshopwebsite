@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Order;
 use App\Models\Wishlist;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AccountController extends Controller
 {
@@ -159,5 +160,23 @@ class AccountController extends Controller
         return response()->json([
             'error' => 'Order cannot be confirmed. It must be delivered and within 24 hours of delivery.'
         ], 422);
+    }
+    
+    public function downloadOrderPdf($id)
+    {
+        $order = Order::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->with(['items.product', 'address'])
+            ->firstOrFail();
+            
+        // Shop information (you can get this from settings or use defaults)
+        $shop_name = config('app.name', 'Local Shop');
+        $shop_address = '123 Main Street, City, State - 123456';
+        $shop_phone = '+91 9876543210';
+        $shop_email = 'info@localshop.com';
+        
+        $pdf = Pdf::loadView('website.orders.pdf', compact('order', 'shop_name', 'shop_address', 'shop_phone', 'shop_email'));
+        
+        return $pdf->download('order-' . $order->order_id . '.pdf');
     }
 }

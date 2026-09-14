@@ -73,6 +73,9 @@
                                 <a href="{{ route('account.order-details', $order->id) }}" class="btn btn-outline-primary btn-sm">
                                     <i class="fas fa-eye"></i> View Details
                                 </a>
+                                <a href="{{ route('account.order-download', $order->id) }}" class="btn btn-info btn-sm mt-1">
+                                    <i class="fas fa-file-pdf"></i> Download Bill
+                                </a>
                                 @if($order->order_status == 'delivered')
                                     @if($order->canBeConfirmedByUser())
                                         <button class="btn btn-success btn-sm mt-1" onclick="confirmDeliveryFromList({{ $order->id }})">

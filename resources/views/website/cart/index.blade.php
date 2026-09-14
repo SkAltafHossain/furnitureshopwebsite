@@ -44,9 +44,9 @@
                                         </h6>
                                         <p class="product-category text-muted mb-2">{{ $product->category->name ?? 'Uncategorized' }}</p>
                                         <div class="product-price">
-                                            <span class="current-price fw-bold text-primary fs-5">₹{{ number_format($product->price, 2) }}</span>
+                                            <span class="current-price fw-bold text-primary fs-5">₹{{ number_format($product->discount_price ?? $product->price, 2) }}</span>
                                             @if($product->discount_price)
-                                                <span class="original-price text-muted text-decoration-line-through ms-3">₹{{ number_format($product->discount_price, 2) }}</span>
+                                                <span class="original-price text-muted text-decoration-line-through ms-3">₹{{ number_format($product->price, 2) }}</span>
                                             @endif
                                         </div>
                                     </div>
@@ -65,9 +65,10 @@
                                                 </button>
                                             </div>
                                             @if($product->stock <= 5)
-                                                <small class="text-warning d-block mt-2">
-                                                    <i class="fas fa-exclamation-triangle"></i> Only {{ $product->stock }} left
-                                                </small>
+                                                <div class="alert alert-warning alert-dismissible fade show mt-2 py-2 px-3 small" role="alert">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i> 
+                                                    <strong>Only {{ $product->stock }} left!</strong> Order soon.
+                                                </div>
                                             @endif
                                         </div>
                                     </div>
@@ -75,7 +76,7 @@
                                     <!-- Item Total & Remove -->
                                     <div class="col-auto text-end">
                                         <label class="form-label small text-muted mb-2 d-block">Total</label>
-                                        <div class="item-total fw-bold text-success fs-4 mb-3">₹{{ number_format($product->price * $item['quantity'], 2) }}</div>
+                                        <div class="item-total fw-bold text-success fs-4 mb-3">₹{{ number_format(($product->discount_price ?? $product->price) * $item['quantity'], 2) }}</div>
                                         <button class="btn btn-outline-danger remove-item" data-product-id="{{ $productId }}">
                                             <i class="fas fa-trash-alt"></i> Remove
                                         </button>
@@ -107,7 +108,7 @@
                             foreach($cart as $productId => $item) {
                                 $product = \App\Models\Product::find($productId);
                                 if ($product) {
-                                    $subtotal += $product->price * $item['quantity'];
+                                    $subtotal += ($product->discount_price ?? $product->price) * $item['quantity'];
                                     $totalItems += $item['quantity'];
                                 }
                             }
@@ -174,6 +175,25 @@
     background: white;
     transition: all 0.3s ease;
     border: 1px solid #e9ecef !important;
+}
+
+/* Stock Warning Alert Styles */
+.alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%) !important;
+    border: 2px solid #ffc107 !important;
+    border-radius: 8px !important;
+    color: #856404 !important;
+    font-weight: 600 !important;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+    }
 }
 
 .cart-item:hover {
@@ -913,7 +933,7 @@ $(document).ready(function() {
             var productId = $(this).data('product-id');
             var quantity = parseInt($(this).val());
             console.log('Reading input value:', quantity, 'for product:', productId);
-            var priceElement = $(this).closest('.cart-item').find('.text-primary.fw-bold');
+            var priceElement = $(this).closest('.cart-item').find('.current-price');
             var price = parseFloat(priceElement.text().replace('₹', '').replace(',', ''));
             
             subtotal += price * quantity;
