@@ -2,6 +2,10 @@
 
 @section('title', 'Home')
 
+@php
+    $shopSettings = \App\Models\ShopSetting::getSettings();
+@endphp
+
 @section('content')
 <!-- Hero Banner Slider -->
 <section class="hero-slider">
@@ -21,16 +25,16 @@
                     @else
                         <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyMCIgaGVpZ2h0PSI1MDAiIHZpZXdCb3g9IjAgMCAxOTIwIDUwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE5MjAiIGhlaWdodD0iNTAwIiBmaWxsPSIjMGRkNmZkIi8+Cjx0ZXh0IHg9Ijk2MCIgeT0iMjUwIiBmaWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj57eyBiYW5uZXItPnRpdGxlIH19PC90ZXh0Pgo8L3N2Zz4K" class="d-block w-100" alt="{{ $banner->title }}">
                         <div class="carousel-caption d-none d-md-block">
-                            <h2>{{ $banner->title ?? 'Welcome to Local Shop' }}</h2>
+                            <h2>{{ $banner->title ?? 'Welcome to ' . $shopSettings->shop_name }}</h2>
                             <p>{{ $banner->description ?? 'Your trusted local e-commerce store' }}</p>
                         </div>
                     @endif
                 </div>
             @empty
                 <div class="carousel-item active">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyMCIgaGVpZ2h0PSI1MDAiIHZpZXdCb3g9IjAgMCAxOTIwIDUwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE5MjAiIGhlaWdodD0iNTAwIiBmaWxsPSIjMGRkNmZkIi8+Cjx0ZXh0IHg9Ijk2MCIgeT0iMjUwIiBmaWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5XZWxjb21lIHRvIExvY2FsIFNob3A8L3RleHQ+Cjwvc3ZnPgo=" class="d-block w-100" alt="Welcome to Local Shop">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyMCIgaGVpZ2h0PSI1MDAiIHZpZXdCb3g9IjAgMCAxOTIwIDUwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE5MjAiIGhlaWdodD0iNTAwIiBmaWxsPSIjMGRkNmZkIi8+Cjx0ZXh0IHg9Ijk2MCIgeT0iMjUwIiBmaWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5XZWxjb21lIHRvIExvY2FsIFNob3A8L3RleHQ+Cjwvc3ZnPgo=" class="d-block w-100" alt="Welcome to {{ $shopSettings->shop_name }}">
                     <div class="carousel-caption d-none d-md-block">
-                        <h2>Welcome to Local Shop</h2>
+                        <h2>Welcome to {{ $shopSettings->shop_name }}</h2>
                         <p>Your trusted local e-commerce store</p>
                         <a href="{{ route('products.index') }}" class="btn btn-light btn-lg">Shop Now</a>
                     </div>

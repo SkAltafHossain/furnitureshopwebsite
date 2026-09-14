@@ -2,7 +2,12 @@
 
 @section('title', 'Dashboard')
 @section('page-title', 'Dashboard')
-@section('page-subtitle', 'Welcome to Local Shop Admin Panel')
+
+@php
+    $shopSettings = \App\Models\ShopSetting::getSettings();
+@endphp
+
+@section('page-subtitle', 'Welcome to ' . $shopSettings->shop_name . ' Admin Panel')
 
 @section('content')
 <div class="row">

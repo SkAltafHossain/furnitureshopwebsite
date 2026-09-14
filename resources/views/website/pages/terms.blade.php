@@ -2,6 +2,10 @@
 
 @section('title', 'Terms & Conditions')
 
+@php
+    $shopSettings = \App\Models\ShopSetting::getSettings();
+@endphp
+
 @section('content')
 <div class="container-fluid py-5">
     <div class="row">
@@ -15,7 +19,7 @@
                 <div class="card-body">
                     <section class="mb-4">
                         <h2 class="h4 mb-3">1. Acceptance of Terms</h2>
-                        <p>By accessing and using Local Shop's website and services, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.</p>
+                        <p>By accessing and using {{ $shopSettings->shop_name }}'s website and services, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.</p>
                     </section>
                     
                     <section class="mb-4">
@@ -65,7 +69,7 @@
                     
                     <section class="mb-4">
                         <h2 class="h4 mb-3">8. Intellectual Property</h2>
-                        <p>8.1. All content on this website, including text, images, and logos, is owned by Local Shop.</p>
+                        <p>8.1. All content on this website, including text, images, and logos, is owned by {{ $shopSettings->shop_name }}.</p>
                         <p>8.2. You may not use our content without prior written permission.</p>
                         <p>8.3. All trademarks and copyrights are protected.</p>
                     </section>
@@ -91,7 +95,7 @@
                     
                     <section class="mb-4">
                         <h2 class="h4 mb-3">11. Indemnification</h2>
-                        <p>You agree to indemnify and hold Local Shop harmless from any claims, damages, or expenses arising from your use of our services or violation of these terms.</p>
+                        <p>You agree to indemnify and hold {{ $shopSettings->shop_name }} harmless from any claims, damages, or expenses arising from your use of our services or violation of these terms.</p>
                     </section>
                     
                     <section class="mb-4">
@@ -106,16 +110,16 @@
                     
                     <section class="mb-4">
                         <h2 class="h4 mb-3">14. Governing Law</h2>
-                        <p>These terms shall be governed by and construed in accordance with the laws of the jurisdiction in which Local Shop operates, without regard to its conflict of law provisions.</p>
+                        <p>These terms shall be governed by and construed in accordance with the laws of the jurisdiction in which {{ $shopSettings->shop_name }} operates, without regard to its conflict of law provisions.</p>
                     </section>
                     
                     <section class="mb-4">
                         <h2 class="h4 mb-3">15. Contact Information</h2>
                         <p>If you have any questions about these Terms & Conditions, please contact us:</p>
                         <p>
-                            <strong>Email:</strong> info@localshop.com<br>
-                            <strong>Phone:</strong> +1234567890<br>
-                            <strong>Address:</strong> 123 Main Street, City Center
+                            <strong>Email:</strong> {{ $shopSettings->shop_email }}<br>
+                            <strong>Phone:</strong> {{ $shopSettings->shop_phone }}<br>
+                            <strong>Address:</strong> {{ $shopSettings->shop_address }}
                         </p>
                     </section>
                 </div>

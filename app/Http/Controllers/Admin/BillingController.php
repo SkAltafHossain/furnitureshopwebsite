@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Bill;
 use App\Models\BillItem;
+use App\Models\ShopSetting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -157,13 +158,15 @@ class BillingController extends Controller
     private function generateBillPDF($bill)
     {
         $bill->load('items.product');
-        
+
+        $shopSettings = ShopSetting::getSettings();
+
         $data = [
             'bill' => $bill,
-            'shop_name' => 'Local Shop',
-            'shop_address' => '123 Main Street, City',
-            'shop_phone' => '+91 9876543210',
-            'shop_email' => 'info@localshop.com',
+            'shop_name' => $shopSettings->shop_name,
+            'shop_address' => $shopSettings->shop_address,
+            'shop_phone' => $shopSettings->shop_phone,
+            'shop_email' => $shopSettings->shop_email,
         ];
 
         $pdf = Pdf::loadView('admin.billing.pdf', $data);

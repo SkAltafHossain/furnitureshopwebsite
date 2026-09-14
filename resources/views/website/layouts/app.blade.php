@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Local Shop') - Premium E-commerce Store</title>
+    @php
+        $shopSettings = \App\Models\ShopSetting::getSettings();
+    @endphp
+    <title>@yield('title', $shopSettings->shop_name) - Premium E-commerce Store</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -28,7 +31,7 @@
                             <i class="fas fa-store"></i>
                         </div>
                         <div>
-                            <h4 class="brand-name mb-0 text-primary">Local Shop</h4>
+                            <h4 class="brand-name mb-0 text-primary">{{ $shopSettings->shop_name }}</h4>
                         </div>
                     </a>
                 </div>
@@ -65,7 +68,7 @@
                             <i class="fas fa-store"></i>
                         </div>
                         <div>
-                            <h4 class="brand-name mb-0 text-primary">Local Shop</h4>
+                            <h4 class="brand-name mb-0 text-primary">{{ $shopSettings->shop_name }}</h4>
                         </div>
                     </a>
                 </div>
@@ -177,7 +180,7 @@
                 <div class="logo-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
                     <i class="fas fa-store"></i>
                 </div>
-                <h5 class="mb-0 text-primary">Local Shop</h5>
+                <h5 class="mb-0 text-primary">{{ $shopSettings->shop_name }}</h5>
             </div>
             <button class="mobile-nav-close" id="mobileNavClose">
                 <i class="fas fa-times"></i>
@@ -518,7 +521,7 @@
                             <div class="footer-logo bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
                                 <i class="fas fa-store"></i>
                             </div>
-                            <h4 class="mb-0">Local Shop</h4>
+                            <h4 class="mb-0">{{ $shopSettings->shop_name }}</h4>
                         </div>
                         <p class="text-muted">Your trusted local e-commerce store for quality products at affordable prices. Shop with confidence and enjoy exceptional service.</p>
                     </div>
@@ -553,15 +556,15 @@
                     <div class="contact-info">
                         <p class="text-white-50 mb-2">
                             <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                            123 Main Street, City Center
+                            {{ $shopSettings->shop_address }}
                         </p>
                         <p class="text-white-50 mb-2">
                             <i class="fas fa-phone me-2 text-primary"></i>
-                            +1234567890
+                            {{ $shopSettings->shop_phone }}
                         </p>
                         <p class="text-white-50 mb-3">
                             <i class="fas fa-envelope me-2 text-primary"></i>
-                            info@localshop.com
+                            {{ $shopSettings->shop_email }}
                         </p>
                     </div>
                 </div>
@@ -576,10 +579,10 @@
             <div class="footer-bottom border-top border-secondary pt-4 mt-4">
                 <div class="row">
                     <div class="col-md-6">
-                        <p class="text-white-50 mb-0">&copy; {{ date('Y') }} Local Shop. All rights reserved.</p>
+                        <p class="text-white-50 mb-0">&copy; {{ date('Y') }} {{ $shopSettings->shop_name }}. All rights reserved.</p>
                     </div>
                     <div class="col-md-6 text-end">
-                        <p class="text-white-50 mb-0">Designed with <i class="fas fa-heart text-danger"></i> by Local Shop Team</p>
+                        <p class="text-white-50 mb-0">Designed with <i class="fas fa-heart text-danger"></i> by {{ $shopSettings->shop_name }} Team</p>
                     </div>
                 </div>
             </div>

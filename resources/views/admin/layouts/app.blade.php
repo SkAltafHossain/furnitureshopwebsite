@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Panel') - Local Shop</title>
+    @php
+        $shopSettings = \App\Models\ShopSetting::getSettings();
+    @endphp
+    <title>@yield('title', 'Admin Panel') - {{ $shopSettings->shop_name }}</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -121,7 +124,7 @@
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="brand">
-                <i class="fas fa-store"></i> Local Shop
+                <i class="fas fa-store"></i> {{ $shopSettings->shop_name }}
             </div>
             
             <ul class="nav flex-column">
@@ -217,7 +220,7 @@
             <div class="top-header d-flex justify-content-between align-items-center">
                 <div>
                     <h1 class="h3 mb-0">@yield('page-title', 'Dashboard')</h1>
-                    <p class="text-muted mb-0">@yield('page-subtitle', 'Welcome to Local Shop Admin Panel')</p>
+                    <p class="text-muted mb-0">@yield('page-subtitle', 'Welcome to ' . $shopSettings->shop_name . ' Admin Panel')</p>
                 </div>
                 <div>
                     <span class="text-muted">

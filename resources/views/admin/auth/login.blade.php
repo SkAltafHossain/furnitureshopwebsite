@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - Local Shop</title>
+    @php
+        $shopSettings = \App\Models\ShopSetting::getSettings();
+    @endphp
+    <title>Admin Login - {{ $shopSettings->shop_name }}</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -34,7 +37,7 @@
                     <div class="text-center mb-4">
                         <i class="fas fa-store fa-3x text-primary mb-3"></i>
                         <h3>Admin Login</h3>
-                        <p class="text-muted">Local Shop E-commerce</p>
+                        <p class="text-muted">{{ $shopSettings->shop_name }} E-commerce</p>
                     </div>
                     
                     @if ($errors->any())

@@ -2,6 +2,10 @@
 
 @section('title', 'Privacy Policy')
 
+@php
+    $shopSettings = \App\Models\ShopSetting::getSettings();
+@endphp
+
 @section('content')
 <div class="container-fluid py-5">
     <div class="row">
@@ -15,7 +19,7 @@
                 <div class="card-body">
                     <section class="mb-4">
                         <h2 class="h4 mb-3">1. Introduction</h2>
-                        <p>Local Shop is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal information when you use our website and services.</p>
+                        <p>{{ $shopSettings->shop_name }} is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal information when you use our website and services.</p>
                     </section>
                     
                     <section class="mb-4">
@@ -134,10 +138,10 @@
                         <h2 class="h4 mb-3">16. Contact Information</h2>
                         <p>If you have questions or concerns about this Privacy Policy or want to exercise your rights, please contact us:</p>
                         <p>
-                            <strong>Email:</strong> privacy@localshop.com<br>
-                            <strong>Phone:</strong> +1234567890<br>
-                            <strong>Address:</strong> 123 Main Street, City Center<br>
-                            <strong>Data Protection Officer:</strong> dpo@localshop.com
+                            <strong>Email:</strong> {{ $shopSettings->shop_email }}<br>
+                            <strong>Phone:</strong> {{ $shopSettings->shop_phone }}<br>
+                            <strong>Address:</strong> {{ $shopSettings->shop_address }}<br>
+                            <strong>Data Protection Officer:</strong> dpo@{{ str_replace(' ', '', strtolower($shopSettings->shop_name)) }}.com
                         </p>
                     </section>
                     

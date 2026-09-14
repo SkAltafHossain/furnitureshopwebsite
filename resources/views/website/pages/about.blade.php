@@ -2,13 +2,17 @@
 
 @section('title', 'About Us')
 
+@php
+    $shopSettings = \App\Models\ShopSetting::getSettings();
+@endphp
+
 @section('content')
 <div class="container-fluid py-5">
     <div class="row">
         <div class="col-md-8 mx-auto">
             <!-- Page Header -->
             <div class="text-center mb-5">
-                <h1 class="display-4 fw-bold text-primary">About Local Shop</h1>
+                <h1 class="display-4 fw-bold text-primary">About {{ $shopSettings->shop_name }}</h1>
                 <p class="lead text-muted">Your trusted local e-commerce store since 2024</p>
             </div>
             
@@ -18,8 +22,8 @@
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <p class="mb-3">
-                            Welcome to Local Shop, your premier destination for quality products at affordable prices. 
-                            Founded in 2024, we started with a simple mission: to bring the best local products directly 
+                            Welcome to {{ $shopSettings->shop_name }}, your premier destination for quality products at affordable prices.
+                            Founded in 2024, we started with a simple mission: to bring the best local products directly
                             to your doorstep.
                         </p>
                         <p class="mb-3">
@@ -192,9 +196,9 @@
                     <div class="col-md-6">
                         <h5>Visit Our Store</h5>
                         <p class="text-muted">
-                            <i class="fas fa-map-marker-alt me-2"></i>123 Main Street, City Center<br>
-                            <i class="fas fa-phone me-2"></i>+1234567890<br>
-                            <i class="fas fa-envelope me-2"></i>info@localshop.com
+                            <i class="fas fa-map-marker-alt me-2"></i>{{ $shopSettings->shop_address }}<br>
+                            <i class="fas fa-phone me-2"></i>{{ $shopSettings->shop_phone }}<br>
+                            <i class="fas fa-envelope me-2"></i>{{ $shopSettings->shop_email }}
                         </p>
                     </div>
                     <div class="col-md-6">
