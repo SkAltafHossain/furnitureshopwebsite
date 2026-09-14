@@ -79,8 +79,8 @@
                                 @endforeach
                             </div>
 
-                            <div class="d-flex justify-content-center mt-4">
-                                {{ $wishlistItems->links() }}
+                            <div class="pagination-container mt-4">
+                                {{ $wishlistItems->links('vendor.pagination.custom') }}
                             </div>
                         @else
                             <div class="text-center py-5">

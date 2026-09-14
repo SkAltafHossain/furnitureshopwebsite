@@ -108,8 +108,8 @@
             
             <!-- Pagination -->
             @if($orders->hasPages())
-                <div class="d-flex justify-content-center mt-4">
-                    {{ $orders->links() }}
+                <div class="pagination-container mt-4">
+                    {{ $orders->links('vendor.pagination.custom') }}
                 </div>
             @endif
         </div>

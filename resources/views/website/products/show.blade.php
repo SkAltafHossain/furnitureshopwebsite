@@ -358,8 +358,8 @@
                                             @endforeach
                                             
                                             @if($reviews->hasPages())
-                                                <div class="d-flex justify-content-center mt-3">
-                                                    {{ $reviews->links() }}
+                                                <div class="pagination-container mt-3">
+                                                    {{ $reviews->links('vendor.pagination.custom') }}
                                                 </div>
                                             @endif
                                         @else
