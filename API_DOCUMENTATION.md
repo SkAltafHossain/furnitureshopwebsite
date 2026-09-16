@@ -102,10 +102,15 @@ All API responses follow this format:
 When fetching products, you can use these query parameters:
 
 - `category` - Filter by category slug
-- `min_price` - Minimum price
-- `max_price` - Maximum price
+- `min_price` - Minimum price (uses discount price if available)
+- `max_price` - Maximum price (uses discount price if available)
 - `search` - Search query
-- `sort` - Sort options: `price_low`, `price_high`, `name_asc`, `name_desc`, `newest`
+- `sort` - Sort options:
+  - `price_low` - Sort by price lowest to highest (uses discount price if available)
+  - `price_high` - Sort by price highest to lowest (uses discount price if available)
+  - `name_asc` - Sort by name A to Z
+  - `name_desc` - Sort by name Z to A
+  - `newest` - Sort by newest first (default)
 - `per_page` - Items per page (default: 12)
 
 ## Example Requests
@@ -174,28 +179,29 @@ curl -X POST http://your-domain.com/api/orders \
 
 ## Pagination
 
-Paginated responses include:
+Paginated responses include pagination metadata:
 
 ```json
 {
     "success": true,
-    "data": {
-        "current_page": 1,
-        "data": [...],
-        "first_page_url": "...",
-        "from": 1,
-        "last_page": 5,
-        "last_page_url": "...",
-        "links": [...],
-        "next_page_url": "...",
-        "path": "...",
+    "data": [...],
+    "pagination": {
+        "total": 50,
         "per_page": 12,
-        "prev_page_url": null,
-        "to": 12,
-        "total": 50
+        "current_page": 1,
+        "last_page": 5,
+        "from": 1,
+        "to": 12
     }
 }
 ```
+
+- `total` - Total number of items
+- `per_page` - Items per page
+- `current_page` - Current page number
+- `last_page` - Total number of pages
+- `from` - Starting item number
+- `to` - Ending item number
 
 ## Error Codes
 

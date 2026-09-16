@@ -28,10 +28,10 @@ class ProductController extends Controller
 
         // Filter by price range
         if ($request->filled('min_price')) {
-            $query->where('price', '>=', $request->min_price);
+            $query->whereRaw('COALESCE(discount_price, price) >= ?', [$request->min_price]);
         }
         if ($request->filled('max_price')) {
-            $query->where('price', '<=', $request->max_price);
+            $query->whereRaw('COALESCE(discount_price, price) <= ?', [$request->max_price]);
         }
 
         // Search
@@ -43,10 +43,10 @@ class ProductController extends Controller
         // Sort
         switch ($request->sort) {
             case 'price_low':
-                $query->orderBy('price', 'asc');
+                $query->orderByRaw('COALESCE(discount_price, price) ASC');
                 break;
             case 'price_high':
-                $query->orderBy('price', 'desc');
+                $query->orderByRaw('COALESCE(discount_price, price) DESC');
                 break;
             case 'name_asc':
                 $query->orderBy('name', 'asc');
