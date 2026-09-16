@@ -99,7 +99,7 @@ class ProductController extends Controller
     public function search(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'query' => 'required|string|min:2',
+            'q' => 'required|string|min:2',
         ]);
 
         if ($validator->fails()) {
@@ -113,9 +113,9 @@ class ProductController extends Controller
         $products = Product::with('category')
             ->where('status', 'active')
             ->where(function ($query) use ($request) {
-                $query->where('name', 'like', '%' . $request->query . '%')
-                      ->orWhere('description', 'like', '%' . $request->query . '%')
-                      ->orWhere('slug', 'like', '%' . $request->query . '%');
+                $query->where('name', 'like', '%' . $request->q . '%')
+                      ->orWhere('description', 'like', '%' . $request->q . '%')
+                      ->orWhere('slug', 'like', '%' . $request->q . '%');
             })
             ->paginate($request->per_page ?? 12);
 
