@@ -32,6 +32,7 @@ Route::middleware('api')->group(function () {
     // Shop settings (public)
     Route::get('/shop/settings', [ShopController::class, 'settings']);
     Route::get('/shop/info', [ShopController::class, 'settings']);
+    Route::get('/home', [ShopController::class, 'home']);
 
     // Products (public)
     Route::get('/products', [ProductController::class, 'index']);

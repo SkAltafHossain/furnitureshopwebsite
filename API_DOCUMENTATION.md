@@ -23,6 +23,7 @@ Authorization: Bearer {token}
 ### Shop Settings
 - `GET /api/shop/settings` - Get shop settings
 - `GET /api/shop/info` - Get shop information
+- `GET /api/home` - Get home page data (products, categories, latest, featured)
 
 ### Products
 - `GET /api/products` - Get all products (with filters)
@@ -156,6 +157,24 @@ Response includes:
     "data": {
         "product": { ... },
         "related_products": [ ... ]
+    }
+}
+```
+
+### Get Home Page Data
+```bash
+curl -X GET "http://your-domain.com/api/home"
+```
+
+Response includes:
+```json
+{
+    "success": true,
+    "data": {
+        "products": [ ... ],
+        "categories": [ ... ],
+        "latest_products": [ ... ],
+        "featured_products": [ ... ]
     }
 }
 ```
