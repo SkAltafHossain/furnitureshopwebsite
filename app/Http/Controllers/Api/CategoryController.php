@@ -50,10 +50,10 @@ class CategoryController extends Controller
             ->where('status', 'active');
 
         // Filter by price range
-        if ($request->has('min_price')) {
+        if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
-        if ($request->has('max_price')) {
+        if ($request->filled('max_price')) {
             $query->where('price', '<=', $request->max_price);
         }
 
@@ -85,6 +85,14 @@ class CategoryController extends Controller
             'data' => [
                 'category' => new CategoryResource($category),
                 'products' => ProductResource::collection($products)
+            ],
+            'pagination' => [
+                'total' => $products->total(),
+                'per_page' => $products->perPage(),
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
             ]
         ]);
     }

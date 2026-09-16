@@ -19,7 +19,7 @@ class ProductController extends Controller
         $query = Product::with('category');
 
         // Filter by category
-        if ($request->has('category')) {
+        if ($request->filled('category')) {
             $category = Category::where('slug', $request->category)->first();
             if ($category) {
                 $query->where('category_id', $category->id);
@@ -27,15 +27,15 @@ class ProductController extends Controller
         }
 
         // Filter by price range
-        if ($request->has('min_price')) {
+        if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
-        if ($request->has('max_price')) {
+        if ($request->filled('max_price')) {
             $query->where('price', '<=', $request->max_price);
         }
 
         // Search
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('description', 'like', '%' . $request->search . '%');
         }
@@ -68,7 +68,15 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => ProductResource::collection($products)
+            'data' => ProductResource::collection($products),
+            'pagination' => [
+                'total' => $products->total(),
+                'per_page' => $products->perPage(),
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+            ]
         ]);
     }
 
@@ -113,7 +121,15 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => ProductResource::collection($products)
+            'data' => ProductResource::collection($products),
+            'pagination' => [
+                'total' => $products->total(),
+                'per_page' => $products->perPage(),
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+            ]
         ]);
     }
 
@@ -130,7 +146,15 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => ProductResource::collection($products)
+            'data' => ProductResource::collection($products),
+            'pagination' => [
+                'total' => $products->total(),
+                'per_page' => $products->perPage(),
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+            ]
         ]);
     }
 
@@ -146,7 +170,15 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => ProductResource::collection($products)
+            'data' => ProductResource::collection($products),
+            'pagination' => [
+                'total' => $products->total(),
+                'per_page' => $products->perPage(),
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+            ]
         ]);
     }
 }

@@ -25,7 +25,15 @@ class OrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $orders
+            'data' => $orders,
+            'pagination' => [
+                'total' => $orders->total(),
+                'per_page' => $orders->perPage(),
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+                'from' => $orders->firstItem(),
+                'to' => $orders->lastItem(),
+            ]
         ]);
     }
 

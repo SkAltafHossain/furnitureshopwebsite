@@ -22,7 +22,15 @@ class WishlistController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $wishlistItems
+            'data' => $wishlistItems,
+            'pagination' => [
+                'total' => $wishlistItems->total(),
+                'per_page' => $wishlistItems->perPage(),
+                'current_page' => $wishlistItems->currentPage(),
+                'last_page' => $wishlistItems->lastPage(),
+                'from' => $wishlistItems->firstItem(),
+                'to' => $wishlistItems->lastItem(),
+            ]
         ]);
     }
 
