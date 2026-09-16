@@ -110,7 +110,8 @@ When fetching products, you can use these query parameters:
   - `price_high` - Sort by price highest to lowest (uses discount price if available)
   - `name_asc` - Sort by name A to Z
   - `name_desc` - Sort by name Z to A
-  - `newest` - Sort by newest first (default)
+  - `newest` - Sort by newest first
+  - Default: Sort by ID ascending (ID-wise)
 - `per_page` - Items per page (default: 12)
 
 ## Example Requests

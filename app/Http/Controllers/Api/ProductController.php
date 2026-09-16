@@ -58,7 +58,7 @@ class ProductController extends Controller
                 $query->orderBy('created_at', 'desc');
                 break;
             default:
-                $query->orderBy('created_at', 'desc');
+                $query->orderBy('id', 'asc');
         }
 
         // Filter by status
@@ -141,7 +141,7 @@ class ProductController extends Controller
         $products = Product::with('category')
             ->where('status', 'active')
             ->where('featured', true)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate($request->per_page ?? 12);
 
         return response()->json([
@@ -165,7 +165,7 @@ class ProductController extends Controller
     {
         $products = Product::with('category')
             ->where('status', 'active')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate($request->per_page ?? 12);
 
         return response()->json([

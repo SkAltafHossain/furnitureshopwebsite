@@ -75,7 +75,7 @@ class CategoryController extends Controller
                 $query->orderBy('created_at', 'desc');
                 break;
             default:
-                $query->orderBy('created_at', 'desc');
+                $query->orderBy('id', 'asc');
         }
 
         $products = $query->paginate($request->per_page ?? 12);
