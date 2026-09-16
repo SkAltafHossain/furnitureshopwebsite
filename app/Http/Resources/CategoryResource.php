@@ -16,9 +16,9 @@ class CategoryResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->category_name,
+            'name' => $this->name,
             'slug' => $this->slug,
-            'image' => $this->category_image ? asset('storage/' . $this->category_image) : null,
+            'image' => $this->image ? asset('storage/' . $this->image) : null,
             'status' => $this->status,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),

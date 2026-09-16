@@ -17,7 +17,7 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         $categories = Category::where('status', 'active')
-            ->orderBy('category_name', 'asc')
+            ->orderBy('name', 'asc')
             ->get();
 
         return response()->json([
