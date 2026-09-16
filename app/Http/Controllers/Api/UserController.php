@@ -1,0 +1,222 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\Address;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+
+class UserController extends Controller
+{
+    /**
+     * Get user profile
+     */
+    public function profile(Request $request)
+    {
+        $user = $request->user()->load('defaultAddress');
+
+        return response()->json([
+            'success' => true,
+            'data' => $user
+        ]);
+    }
+
+    /**
+     * Update user profile
+     */
+    public function update(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . auth()->id(),
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+        $user->update($request->only(['name', 'email', 'phone']));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully',
+            'data' => $user
+        ]);
+    }
+
+    /**
+     * Update user password
+     */
+    public function updatePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Current password is incorrect'
+            ], 400);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password updated successfully'
+        ]);
+    }
+
+    /**
+     * Get user addresses
+     */
+    public function addresses(Request $request)
+    {
+        $addresses = $request->user()->addresses()->orderBy('is_default', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $addresses
+        ]);
+    }
+
+    /**
+     * Store a new address
+     */
+    public function storeAddress(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|max:100',
+            'postal_code' => 'required|string|max:20',
+            'is_default' => 'boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        // If setting as default, remove default from other addresses
+        if ($request->is_default) {
+            $user->addresses()->update(['is_default' => false]);
+        }
+
+        $address = $user->addresses()->create($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Address added successfully',
+            'data' => $address
+        ], 201);
+    }
+
+    /**
+     * Update an address
+     */
+    public function updateAddress(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|max:100',
+            'postal_code' => 'required|string|max:20',
+            'is_default' => 'boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $address = $request->user()->addresses()->findOrFail($id);
+
+        // If setting as default, remove default from other addresses
+        if ($request->is_default) {
+            $request->user()->addresses()->where('id', '!=', $id)->update(['is_default' => false]);
+        }
+
+        $address->update($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Address updated successfully',
+            'data' => $address
+        ]);
+    }
+
+    /**
+     * Delete an address
+     */
+    public function deleteAddress(Request $request, $id)
+    {
+        $address = $request->user()->addresses()->findOrFail($id);
+
+        // Prevent deletion if it's the only address
+        if ($request->user()->addresses()->count() === 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot delete your only address'
+            ], 400);
+        }
+
+        $address->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Address deleted successfully'
+        ]);
+    }
+
+    /**
+     * Set default address
+     */
+    public function setDefaultAddress(Request $request, $id)
+    {
+        $address = $request->user()->addresses()->findOrFail($id);
+
+        // Unset all other default addresses
+        $request->user()->addresses()->update(['is_default' => false]);
+
+        // Set this address as default
+        $address->update(['is_default' => true]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Default address updated successfully',
+            'data' => $address
+        ]);
+    }
+}

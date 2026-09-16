@@ -1,0 +1,91 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Category;
+use App\Models\Product;
+use App\Http\Resources\CategoryResource;
+use App\Http\Resources\ProductResource;
+use Illuminate\Http\Request;
+
+class CategoryController extends Controller
+{
+    /**
+     * Display a listing of categories
+     */
+    public function index(Request $request)
+    {
+        $categories = Category::where('status', 'active')
+            ->orderBy('category_name', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => CategoryResource::collection($categories)
+        ]);
+    }
+
+    /**
+     * Display the specified category
+     */
+    public function show($id)
+    {
+        $category = Category::findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'data' => new CategoryResource($category)
+        ]);
+    }
+
+    /**
+     * Get products by category
+     */
+    public function products(Request $request, $id)
+    {
+        $category = Category::findOrFail($id);
+
+        $query = Product::where('category_id', $category->id)
+            ->where('status', 'active');
+
+        // Filter by price range
+        if ($request->has('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->has('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        // Sort
+        switch ($request->sort) {
+            case 'price_low':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_high':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'name_asc':
+                $query->orderBy('name', 'asc');
+                break;
+            case 'name_desc':
+                $query->orderBy('name', 'desc');
+                break;
+            case 'newest':
+                $query->orderBy('created_at', 'desc');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
+        }
+
+        $products = $query->paginate($request->per_page ?? 12);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'category' => new CategoryResource($category),
+                'products' => ProductResource::collection($products)
+            ]
+        ]);
+    }
+}
