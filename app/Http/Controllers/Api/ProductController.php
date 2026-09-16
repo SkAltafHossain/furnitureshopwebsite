@@ -87,9 +87,21 @@ class ProductController extends Controller
     {
         $product = Product::with('category')->findOrFail($id);
 
+        // Get related products from the same category (excluding current product)
+        $relatedProducts = Product::with('category')
+            ->where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->where('status', 'active')
+            ->orderBy('id', 'asc')
+            ->limit(8)
+            ->get();
+
         return response()->json([
             'success' => true,
-            'data' => new ProductResource($product)
+            'data' => [
+                'product' => new ProductResource($product),
+                'related_products' => ProductResource::collection($relatedProducts)
+            ]
         ]);
     }
 
@@ -99,7 +111,7 @@ class ProductController extends Controller
     public function search(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'q' => 'required|string|min:2',
+            'query' => 'required|string|min:2',
         ]);
 
         if ($validator->fails()) {
@@ -113,9 +125,9 @@ class ProductController extends Controller
         $products = Product::with('category')
             ->where('status', 'active')
             ->where(function ($query) use ($request) {
-                $query->where('name', 'like', '%' . $request->q . '%')
-                      ->orWhere('description', 'like', '%' . $request->q . '%')
-                      ->orWhere('slug', 'like', '%' . $request->q . '%');
+                $query->where('name', 'like', '%' . $request->input('query') . '%')
+                      ->orWhere('description', 'like', '%' . $request->input('query') . '%')
+                      ->orWhere('slug', 'like', '%' . $request->input('query') . '%');
             })
             ->paginate($request->per_page ?? 12);
 

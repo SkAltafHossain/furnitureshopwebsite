@@ -26,7 +26,7 @@ Authorization: Bearer {token}
 
 ### Products
 - `GET /api/products` - Get all products (with filters)
-- `GET /api/products/{id}` - Get single product details
+- `GET /api/products/{id}` - Get single product details with related products
 - `GET /api/products/search` - Search products
 - `GET /api/products/featured` - Get featured products
 - `GET /api/products/latest` - Get latest products
@@ -142,6 +142,22 @@ curl -X POST http://your-domain.com/api/login \
 ### Get Products
 ```bash
 curl -X GET "http://your-domain.com/api/products?per_page=10&sort=price_low"
+```
+
+### Get Single Product with Related Products
+```bash
+curl -X GET "http://your-domain.com/api/products/1"
+```
+
+Response includes:
+```json
+{
+    "success": true,
+    "data": {
+        "product": { ... },
+        "related_products": [ ... ]
+    }
+}
 ```
 
 ### Get Cart (Authenticated)

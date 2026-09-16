@@ -35,15 +35,15 @@ Route::middleware('api')->group(function () {
 
     // Products (public)
     Route::get('/products', [ProductController::class, 'index']);
-    Route::get('/products/{id}', [ProductController::class, 'show']);
     Route::get('/products/search', [ProductController::class, 'search']);
     Route::get('/products/featured', [ProductController::class, 'featured']);
     Route::get('/products/latest', [ProductController::class, 'latest']);
+    Route::get('/products/{id}', [ProductController::class, 'show']);
 
     // Categories (public)
     Route::get('/categories', [CategoryController::class, 'index']);
-    Route::get('/categories/{id}', [CategoryController::class, 'show']);
     Route::get('/categories/{id}/products', [CategoryController::class, 'products']);
+    Route::get('/categories/{id}', [CategoryController::class, 'show']);
 
     // Protected routes (require authentication)
     Route::middleware('auth:sanctum')->group(function () {
