@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -49,10 +50,10 @@ class AuthController extends Controller
 
         if (Auth::attempt($authCredentials)) {
             $request->session()->regenerate();
-            
+
             // Merge guest cart with user cart if exists
             $this->mergeGuestCart();
-            
+
             // Check if request is from modal
             if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
                 return response()->json([
@@ -61,20 +62,20 @@ class AuthController extends Controller
                     'redirect' => route('home')
                 ]);
             }
-            
+
             return redirect()->intended(route('home'));
         }
-        
+
         if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'success' => false,
-                'message' => 'The provided credentials do not match our records.',
-                'errors' => ['email' => 'The provided credentials do not match our records.']
-            ], 422);
+                'message' => 'Invalid credentials',
+                'errors' => ['email' => 'Invalid credentials']
+            ], 401);
         }
-        
+
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'email' => 'Invalid credentials',
         ])->onlyInput('email');
     }
     
@@ -85,27 +86,42 @@ class AuthController extends Controller
     
     public function register(Request $request)
     {
-        $data = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'required|string|max:20|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'terms' => 'required|accepted',
+        ], [
+            'email.unique' => 'The email has already been taken.',
+            'phone.unique' => 'The phone number has already been taken.',
         ]);
-        
+
+        if ($validator->fails()) {
+            if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            return back()->withErrors($validator->errors())->withInput();
+        }
+
         $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'],
-            'password' => Hash::make($data['password']),
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => Hash::make($request->password),
             'status' => 'active',
         ]);
-        
+
         Auth::login($user);
-        
+
         // Merge guest cart with user cart if exists
         $this->mergeGuestCart();
-        
+
         // Check if request is from modal
         if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
@@ -114,7 +130,7 @@ class AuthController extends Controller
                 'redirect' => route('home')
             ]);
         }
-        
+
         return redirect()->route('home')->with('success', 'Registration successful!');
     }
     

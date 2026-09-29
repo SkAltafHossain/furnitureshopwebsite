@@ -84,14 +84,16 @@ class AuthController extends Controller
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid credentials'
+                'message' => 'Invalid credentials',
+                'errors' => ['email' => 'Invalid credentials']
             ], 401);
         }
 
         if ($user->status !== 'active') {
             return response()->json([
                 'success' => false,
-                'message' => 'Account is inactive'
+                'message' => 'Account is inactive',
+                'errors' => ['email' => 'Account is inactive']
             ], 403);
         }
 
