@@ -58,6 +58,7 @@ Authorization: Bearer {token}
 - `PUT /api/cart/{id}` - Update cart item quantity
 - `DELETE /api/cart/{id}` - Remove item from cart
 - `DELETE /api/cart` - Clear cart
+- `POST /api/cart/buy-now` - Get product details for Buy Now checkout
 
 ### Orders
 - `GET /api/orders` - Get user orders
@@ -222,6 +223,54 @@ curl -X POST http://your-domain.com/api/orders \
 ```
 
 Note: The order will be created using items from the user's cart in the database.
+
+### Buy Now - Get Product Details (Authenticated)
+```bash
+curl -X POST http://your-domain.com/api/cart/buy-now \
+  -H "Authorization: Bearer {your_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "product_id": 1,
+    "quantity": 2
+  }'
+```
+
+Response:
+```json
+{
+    "success": true,
+    "message": "Product ready for checkout",
+    "data": {
+        "product": { ... },
+        "quantity": 2,
+        "price": 999.00,
+        "subtotal": 1998.00,
+        "shipping": 0,
+        "total": 1998.00,
+        "is_buy_now": true
+    }
+}
+```
+
+### Create Order with Buy Now (Authenticated)
+```bash
+curl -X POST http://your-domain.com/api/orders \
+  -H "Authorization: Bearer {your_token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "address_id": 1,
+    "payment_method": "cod",
+    "is_buy_now": true,
+    "items": [
+        {
+            "product_id": 1,
+            "quantity": 2
+        }
+    ]
+  }'
+```
+
+Note: When `is_buy_now` is true, the order will be created using the provided `items` array instead of the cart. The cart will not be cleared after order creation.
 
 ## Pagination
 

@@ -62,6 +62,10 @@ class OrderController extends Controller
         $validator = Validator::make($request->all(), [
             'address_id' => 'required|exists:addresses,id',
             'payment_method' => 'required|in:cod,online',
+            'is_buy_now' => 'nullable|boolean',
+            'items' => 'nullable|array', // For buy-now checkout
+            'items.*.product_id' => 'required_with:items|exists:products,id',
+            'items.*.quantity' => 'required_with:items|integer|min:1|max:10',
         ]);
 
         if ($validator->fails()) {
@@ -76,16 +80,32 @@ class OrderController extends Controller
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        // Get cart items from database
-        $cartItems = Cart::where('user_id', auth()->id())
-            ->with('product')
-            ->get();
+        $isBuyNow = $request->input('is_buy_now', false);
+        $checkoutItems = collect();
 
-        if ($cartItems->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Your cart is empty'
-            ], 400);
+        if ($isBuyNow && $request->has('items')) {
+            // Buy Now checkout - use provided items
+            foreach ($request->items as $item) {
+                $product = Product::with('category')->findOrFail($item['product_id']);
+                $checkoutItems->push((object)[
+                    'product' => $product,
+                    'quantity' => $item['quantity']
+                ]);
+            }
+        } else {
+            // Regular cart checkout - get items from database
+            $cartItems = Cart::where('user_id', auth()->id())
+                ->with('product')
+                ->get();
+
+            if ($cartItems->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your cart is empty'
+                ], 400);
+            }
+
+            $checkoutItems = $cartItems;
         }
 
         DB::beginTransaction();
@@ -94,31 +114,31 @@ class OrderController extends Controller
             $totalAmount = 0;
             $orderItems = [];
 
-            foreach ($cartItems as $cartItem) {
-                $product = $cartItem->product;
+            foreach ($checkoutItems as $checkoutItem) {
+                $product = $checkoutItem->product;
 
                 if (!$product) {
                     throw new \Exception("Product not found");
                 }
 
-                if ($product->stock < $cartItem->quantity) {
+                if ($product->stock < $checkoutItem->quantity) {
                     throw new \Exception("Insufficient stock for {$product->name}");
                 }
 
                 $price = $product->discount_price ? $product->discount_price : $product->price;
-                $itemTotal = $price * $cartItem->quantity;
+                $itemTotal = $price * $checkoutItem->quantity;
                 $totalAmount += $itemTotal;
 
                 $orderItems[] = [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
-                    'quantity' => $cartItem->quantity,
+                    'quantity' => $checkoutItem->quantity,
                     'unit_price' => $price,
                     'total' => $itemTotal,
                 ];
 
                 // Update stock
-                $product->decrement('stock', $cartItem->quantity);
+                $product->decrement('stock', $checkoutItem->quantity);
             }
 
             $order = Order::create([
@@ -141,8 +161,10 @@ class OrderController extends Controller
                 $order->items()->create($item);
             }
 
-            // Clear cart from database
-            Cart::where('user_id', auth()->id())->delete();
+            // Clear cart from database only for regular checkout
+            if (!$isBuyNow) {
+                Cart::where('user_id', auth()->id())->delete();
+            }
 
             DB::commit();
 

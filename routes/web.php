@@ -11,6 +11,7 @@ Route::get('/cart', [App\Http\Controllers\Website\CartController::class, 'index'
 Route::post('/cart/add', [App\Http\Controllers\Website\CartController::class, 'add'])->name('cart.add');
 Route::patch('/cart/update', [App\Http\Controllers\Website\CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/remove', [App\Http\Controllers\Website\CartController::class, 'remove'])->name('cart.remove');
+Route::post('/buy-now', [App\Http\Controllers\Website\CheckoutController::class, 'buyNow'])->name('checkout.buy-now');
 Route::get('/checkout', [App\Http\Controllers\Website\CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout', [App\Http\Controllers\Website\CheckoutController::class, 'process'])->name('checkout.process');
 

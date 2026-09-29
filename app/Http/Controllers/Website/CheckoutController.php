@@ -15,23 +15,92 @@ use Illuminate\Support\Facades\Validator;
 
 class CheckoutController extends Controller
 {
-    public function index()
+    public function buyNow(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1'
+        ]);
+
+        $productId = $request->input('product_id');
+        $quantity = $request->input('quantity');
+
+        $product = Product::findOrFail($productId);
+
+        if ($product->stock < $quantity) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Insufficient stock'
+            ], 400);
+        }
+
+        // Store buy-now items in session (structured like API)
+        session()->put('buy_now_items', [
+            [
+                'product_id' => $productId,
+                'quantity' => $quantity
+            ]
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'redirect_url' => route('checkout.index')
+        ]);
+    }
+
+    public function index(Request $request)
     {
         $cart = [];
-        if (auth()->check()) {
-            $cartItems = Cart::where('user_id', auth()->id())
-                ->with('product')
-                ->get();
+        $isBuyNow = false;
 
-            foreach ($cartItems as $cartItem) {
-                $cart[$cartItem->product_id] = [
-                    'quantity' => $cartItem->quantity,
-                    'added_at' => $cartItem->created_at,
-                    'cart_item_id' => $cartItem->id
+        // Clear buy-now session if coming from cart
+        if ($request->has('clear_buy_now')) {
+            session()->forget('buy_now_items');
+        }
+
+        // Check if this is a buy-now checkout
+        $buyNowItems = session()->get('buy_now_items');
+        if ($buyNowItems) {
+            $isBuyNow = true;
+            foreach ($buyNowItems as $item) {
+                $product = Product::findOrFail($item['product_id']);
+                $cart[$item['product_id']] = [
+                    'quantity' => $item['quantity'],
+                    'added_at' => now(),
+                    'cart_item_id' => null,
+                    'product' => $product
                 ];
             }
         } else {
-            $cart = session()->get('cart', []);
+            // Regular cart checkout
+            if (auth()->check()) {
+                $cartItems = Cart::where('user_id', auth()->id())
+                    ->with('product')
+                    ->get();
+
+                foreach ($cartItems as $cartItem) {
+                    $cart[$cartItem->product_id] = [
+                        'quantity' => $cartItem->quantity,
+                        'added_at' => $cartItem->created_at,
+                        'cart_item_id' => $cartItem->id,
+                        'product' => $cartItem->product
+                    ];
+                }
+            } else {
+                // For guest checkout, load products from session cart
+                $sessionCart = session()->get('cart', []);
+                foreach ($sessionCart as $productId => $item) {
+                    $product = Product::find($productId);
+                    if ($product) {
+                        $cart[$productId] = [
+                            'quantity' => $item['quantity'],
+                            'added_at' => $item['added_at'] ?? now(),
+                            'cart_item_id' => null,
+                            'product' => $product
+                        ];
+                    }
+                }
+            }
         }
 
         if (empty($cart)) {
@@ -45,7 +114,7 @@ class CheckoutController extends Controller
             $addresses = $allAddresses->take(3);
         }
 
-        return view('website.checkout.index', compact('cart', 'addresses', 'allAddresses'));
+        return view('website.checkout.index', compact('cart', 'addresses', 'allAddresses', 'isBuyNow'));
     }
     
     public function process(Request $request)
@@ -91,14 +160,35 @@ class CheckoutController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Get cart from database for authenticated users
-        $cartItems = Cart::where('user_id', auth()->id())
-            ->with('product')
-            ->get();
+        // Check if this is a buy-now checkout or regular cart checkout
+        $buyNowItems = session()->get('buy_now_items');
+        $isBuyNow = !empty($buyNowItems);
 
-        if ($cartItems->isEmpty()) {
-            \Log::error('Cart is empty during checkout');
-            return back()->with('error', 'Your cart is empty');
+        // Get items to checkout
+        $checkoutItems = collect();
+
+        if ($isBuyNow) {
+            // Buy Now checkout - use items from session
+            foreach ($buyNowItems as $item) {
+                $product = Product::findOrFail($item['product_id']);
+                $checkoutItems->push((object)[
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'product' => $product
+                ]);
+            }
+        } else {
+            // Regular cart checkout
+            $cartItems = Cart::where('user_id', auth()->id())
+                ->with('product')
+                ->get();
+
+            if ($cartItems->isEmpty()) {
+                \Log::error('Cart is empty during checkout');
+                return back()->with('error', 'Your cart is empty');
+            }
+
+            $checkoutItems = $cartItems;
         }
 
         // Get address
@@ -119,23 +209,23 @@ class CheckoutController extends Controller
 
         try {
             // Validate stock availability
-            foreach ($cartItems as $cartItem) {
-                $product = $cartItem->product;
+            foreach ($checkoutItems as $item) {
+                $product = $item->product;
                 if (!$product) {
-                    return back()->with('error', 'One or more products in your cart are no longer available.');
+                    return back()->with('error', 'One or more products are no longer available.');
                 }
-                if ($product->stock < $cartItem->quantity) {
-                    return back()->with('error', "Insufficient stock for {$product->name}. Available: {$product->stock}, Requested: {$cartItem->quantity}");
+                if ($product->stock < $item->quantity) {
+                    return back()->with('error', "Insufficient stock for {$product->name}. Available: {$product->stock}, Requested: {$item->quantity}");
                 }
             }
 
             // Calculate total
             $subtotal = 0;
-            foreach ($cartItems as $cartItem) {
-                $product = $cartItem->product;
+            foreach ($checkoutItems as $item) {
+                $product = $item->product;
                 if ($product) {
                     $price = $product->discount_price ?? $product->price;
-                    $subtotal += $price * $cartItem->quantity;
+                    $subtotal += $price * $item->quantity;
                 }
             }
 
@@ -161,27 +251,32 @@ class CheckoutController extends Controller
             ]);
 
             // Create order items and update stock
-            foreach ($cartItems as $cartItem) {
-                $product = $cartItem->product;
+            foreach ($checkoutItems as $item) {
+                $product = $item->product;
                 if ($product) {
                     $price = $product->discount_price ?? $product->price;
                     OrderItem::create([
                         'order_id' => $order->id,
-                        'product_id' => $cartItem->product_id,
-                        'quantity' => $cartItem->quantity,
+                        'product_id' => $item->product_id,
+                        'quantity' => $item->quantity,
                         'price' => $price,
-                        'total' => $price * $cartItem->quantity
+                        'total' => $price * $item->quantity
                     ]);
 
                     // Update product stock
-                    $product->decrement('stock', $cartItem->quantity);
+                    $product->decrement('stock', $item->quantity);
                 }
             }
 
             DB::commit();
 
-            // Clear cart from database
-            Cart::where('user_id', auth()->id())->delete();
+            // Clear cart from database (only for regular checkout)
+            if (!$isBuyNow) {
+                Cart::where('user_id', auth()->id())->delete();
+            }
+
+            // Clear buy-now session
+            session()->forget('buy_now_items');
 
             return redirect()->route('account.order-details', $order->id)
                 ->with('success', 'Order placed successfully!');

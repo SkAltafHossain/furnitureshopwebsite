@@ -33,7 +33,7 @@
                         <div class="card-body">
                             @foreach($cart as $productId => $item)
                                 @php
-                                    $product = \App\Models\Product::find($productId);
+                                    $product = isset($item['product']) ? $item['product'] : \App\Models\Product::find($productId);
                                     if (!$product) continue;
                                 @endphp
                                 <div class="cart-item-checkout mb-4 p-4 border rounded-3 shadow-sm">
@@ -42,8 +42,8 @@
                                         <div class="col-auto">
                                             <div class="product-image-container">
                                                 @if($product->image)
-                                                    <img src="{{ asset('storage/' . $product->image) }}" 
-                                                         alt="{{ $product->name }}" 
+                                                    <img src="{{ asset('storage/' . $product->image) }}"
+                                                         alt="{{ $product->name }}"
                                                          class="rounded-3 product-image-checkout">
                                                 @else
                                                     <div class="bg-light d-flex align-items-center justify-content-center rounded-3 product-image-checkout">
@@ -52,7 +52,7 @@
                                                 @endif
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Product Details -->
                                         <div class="col">
                                             <h6 class="product-title-checkout mb-2">
@@ -68,36 +68,38 @@
                                                 @endif
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Quantity Controls -->
                                         <div class="col-auto">
                                             <div class="text-center">
                                                 <label class="form-label small text-muted mb-2 d-block">Quantity</label>
-                                                <div class="quantity-controls d-flex align-items-center border rounded-3 overflow-hidden">
-                                                    <button class="btn quantity-btn quantity-decrease" type="button" data-product-id="{{ $productId }}">
+                                                <div class="quantity-controls d-flex align-items-center border rounded-3 overflow-hidden {{ $isBuyNow ? 'disabled' : '' }}">
+                                                    <button class="btn quantity-btn quantity-decrease" type="button" data-product-id="{{ $productId }}" {{ $isBuyNow ? 'disabled' : '' }}>
                                                         <i class="fas fa-minus"></i>
                                                     </button>
-                                                    <input type="number" class="form-control border-0 text-center quantity-input fw-bold" value="{{ $item['quantity'] }}" min="1" max="{{ $product->stock }}" data-product-id="{{ $productId }}" readonly>
-                                                    <button class="btn quantity-btn quantity-increase" type="button" data-product-id="{{ $productId }}">
+                                                    <input type="number" class="form-control border-0 text-center quantity-input fw-bold" value="{{ $item['quantity'] }}" min="1" max="{{ $product->stock }}" data-product-id="{{ $productId }}" {{ $isBuyNow ? 'readonly' : '' }}>
+                                                    <button class="btn quantity-btn quantity-increase" type="button" data-product-id="{{ $productId }}" {{ $isBuyNow ? 'disabled' : '' }}>
                                                         <i class="fas fa-plus"></i>
                                                     </button>
                                                 </div>
                                                 @if($product->stock <= 5)
                                                     <div class="alert alert-warning alert-dismissible fade show mt-2 py-2 px-3 small" role="alert">
-                                                        <i class="fas fa-exclamation-triangle me-1"></i> 
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>
                                                         <strong>Only {{ $product->stock }} left!</strong> Order soon.
                                                     </div>
                                                 @endif
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Item Total & Remove -->
                                         <div class="col-auto text-end">
                                             <label class="form-label small text-muted mb-2 d-block">Total</label>
                                             <div class="item-total-checkout fw-bold text-success fs-4 mb-3">₹{{ number_format(($product->discount_price ?? $product->price) * $item['quantity'], 2) }}</div>
-                                            <button class="btn btn-outline-danger remove-item" data-product-id="{{ $productId }}">
-                                                <i class="fas fa-trash-alt"></i> Remove
-                                            </button>
+                                            @if(!$isBuyNow)
+                                                <button class="btn btn-outline-danger remove-item" data-product-id="{{ $productId }}">
+                                                    <i class="fas fa-trash-alt"></i> Remove
+                                                </button>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -554,46 +556,50 @@ var cartUrls = {
 };
 
 var csrfToken = '{{ csrf_token() }}';
+var isBuyNow = {{ $isBuyNow ? 'true' : 'false' }};
 
 $(document).ready(function() {
     var updating = false; // Flag to prevent multiple updates
-    
-    // Update quantity - Simple version
-    $('.quantity-decrease').click(function() {
-        if (updating) return;
-        console.log('Decrease clicked');
-        var $input = $(this).siblings('.quantity-input');
-        var currentVal = parseInt($input.val()) || 1;
-        console.log('Current value:', currentVal);
-        if (currentVal > 1) {
-            $input.val(currentVal - 1);
-            console.log('Set input to:', currentVal - 1);
-            updateCartQuantity($input.data('product-id'), currentVal - 1, $input);
-        }
-    });
-    
-    $('.quantity-increase').click(function() {
-        if (updating) return;
-        console.log('Increase clicked');
-        var $input = $(this).siblings('.quantity-input');
-        var currentVal = parseInt($input.val()) || 1;
-        var max = parseInt($input.attr('max')) || 9999;
-        console.log('Current value:', currentVal, 'Max:', max);
-        if (currentVal < max) {
-            $input.val(currentVal + 1);
-            console.log('Set input to:', currentVal + 1);
-            updateCartQuantity($input.data('product-id'), currentVal + 1, $input);
-        }
-    });
-    
-    // Remove item
-    $('.remove-item').click(function() {
-        var productId = $(this).data('product-id');
-        
-        if (confirm('Are you sure you want to remove this item from your cart?')) {
-            removeFromCart(productId);
-        }
-    });
+
+    // Only enable quantity controls if not buy-now checkout
+    if (!isBuyNow) {
+        // Update quantity - Simple version
+        $('.quantity-decrease').click(function() {
+            if (updating) return;
+            console.log('Decrease clicked');
+            var $input = $(this).siblings('.quantity-input');
+            var currentVal = parseInt($input.val()) || 1;
+            console.log('Current value:', currentVal);
+            if (currentVal > 1) {
+                $input.val(currentVal - 1);
+                console.log('Set input to:', currentVal - 1);
+                updateCartQuantity($input.data('product-id'), currentVal - 1, $input);
+            }
+        });
+
+        $('.quantity-increase').click(function() {
+            if (updating) return;
+            console.log('Increase clicked');
+            var $input = $(this).siblings('.quantity-input');
+            var currentVal = parseInt($input.val()) || 1;
+            var max = parseInt($input.attr('max')) || 9999;
+            console.log('Current value:', currentVal, 'Max:', max);
+            if (currentVal < max) {
+                $input.val(currentVal + 1);
+                console.log('Set input to:', currentVal + 1);
+                updateCartQuantity($input.data('product-id'), currentVal + 1, $input);
+            }
+        });
+
+        // Remove item
+        $('.remove-item').click(function() {
+            var productId = $(this).data('product-id');
+
+            if (confirm('Are you sure you want to remove this item from your cart?')) {
+                removeFromCart(productId);
+            }
+        });
+    }
     
     function updateCartQuantity(productId, quantity, input) {
         if (updating) return;

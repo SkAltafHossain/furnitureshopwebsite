@@ -286,9 +286,9 @@ function handleAddToCart(productId) {
 function buyNow(productId) {
     // Check if user is authenticated using global variable
     if (window.isAuthenticated) {
-        // User is logged in - add to cart and redirect to checkout
+        // User is logged in - use buy-now route to checkout single item
         $.ajax({
-            url: cartUrls.add,
+            url: '{{ route("checkout.buy-now") }}',
             method: 'POST',
             data: {
                 product_id: productId,
@@ -296,26 +296,15 @@ function buyNow(productId) {
                 _token: csrfToken
             },
             success: function(response) {
-                // Update cart count
-                var cartBadge = $('.action-badge');
-                cartBadge.text(response.cart_count);
-                
-                // Show badge if cart has items, hide if empty
-                if (response.cart_count > 0) {
-                    cartBadge.show();
+                if (response.success) {
+                    // Redirect to checkout immediately
+                    window.location.href = response.redirect_url;
                 } else {
-                    cartBadge.hide();
+                    showToast(response.message || 'Error processing buy now', 'error');
                 }
-                
-                // Show success message
-                showToast(response.message, 'success');
-                // Redirect to checkout after a short delay
-                setTimeout(function() {
-                    window.location.href = '{{ route("checkout.index") }}';
-                }, 1000);
             },
             error: function(xhr) {
-                var message = 'Error occurred while adding product to cart.';
+                var message = 'Error occurred while processing buy now.';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     message = xhr.responseJSON.message;
                 }

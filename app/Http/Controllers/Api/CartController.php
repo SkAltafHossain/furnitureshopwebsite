@@ -182,4 +182,51 @@ class CartController extends Controller
             'message' => 'Cart cleared'
         ]);
     }
+
+    /**
+     * Buy Now - Get product details for single item checkout
+     */
+    public function buyNow(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1|max:10',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $product = Product::with('category')->findOrFail($request->product_id);
+
+        if ($product->stock < $request->quantity) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Insufficient stock'
+            ], 400);
+        }
+
+        $price = $product->discount_price ?? $product->price;
+        $subtotal = $price * $request->quantity;
+        $shipping = $subtotal > 500 ? 0 : 50;
+        $total = $subtotal + $shipping;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product ready for checkout',
+            'data' => [
+                'product' => $product,
+                'quantity' => $request->quantity,
+                'price' => $price,
+                'subtotal' => $subtotal,
+                'shipping' => $shipping,
+                'total' => $total,
+                'is_buy_now' => true
+            ]
+        ]);
+    }
 }

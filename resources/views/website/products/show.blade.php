@@ -637,22 +637,22 @@ $(document).ready(function() {
         // Check if user is logged in
         var userLoggedIn = isLoggedIn();
         console.log('Buy Now - User logged in:', userLoggedIn);
-        
+
         if (!userLoggedIn) {
             console.log('Buy Now - User not logged in, showing login modal');
             $('#loginModal').modal('show');
             return;
         }
-        
-        // First add to cart, then redirect to checkout
+
+        // Get quantity
         var quantity = $('input[name="quantity"]').val();
-        
+
         // Debug: Log the URL being used
-        var cartAddUrl = '{{ route("cart.add") }}';
-        console.log('Buy Now Cart Add URL:', cartAddUrl);
-        
+        var buyNowUrl = '{{ route("checkout.buy-now") }}';
+        console.log('Buy Now URL:', buyNowUrl);
+
         $.ajax({
-            url: cartAddUrl,
+            url: buyNowUrl,
             method: 'POST',
             data: {
                 product_id: {{ $product->id }},
@@ -660,13 +660,16 @@ $(document).ready(function() {
                 _token: '{{ csrf_token() }}'
             },
             success: function(response) {
-                // Update cart count
-                $('.badge').text(response.cart_count);
-                
+                console.log('Buy Now success:', response);
+
                 // Redirect to checkout
-                window.location.href = '{{ route("checkout.index") }}';
+                if (response.redirect_url) {
+                    window.location.href = response.redirect_url;
+                }
             },
             error: function(xhr) {
+                console.log('Buy Now error:', xhr);
+
                 var errorMessage = 'Error occurred while processing your request.';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;

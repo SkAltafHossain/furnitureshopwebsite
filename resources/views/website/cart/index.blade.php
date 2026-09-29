@@ -133,7 +133,7 @@
                             <h5 class="text-primary">₹{{ number_format($total, 2) }}</h5>
                         </div>
                         
-                        <a href="{{ route('checkout.index') }}" class="btn btn-primary w-100 mb-2">
+                        <a href="{{ route('checkout.index') }}?clear_buy_now=1" class="btn btn-primary w-100 mb-2">
                             <i class="fas fa-lock"></i> Proceed to Checkout
                         </a>
                         

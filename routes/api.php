@@ -60,6 +60,7 @@ Route::middleware('api')->group(function () {
         Route::put('/cart/{id}', [CartController::class, 'update']);
         Route::delete('/cart/{id}', [CartController::class, 'destroy']);
         Route::delete('/cart', [CartController::class, 'clear']);
+        Route::post('/cart/buy-now', [CartController::class, 'buyNow']);
 
         // Orders
         Route::get('/orders', [OrderController::class, 'index']);
