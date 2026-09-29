@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -16,29 +17,34 @@ class CheckoutController extends Controller
 {
     public function index()
     {
-        $cart = session()->get('cart', []);
-        
-        // Debug: Show cart contents
-        if (!empty($cart)) {
-            $message = 'Cart has ' . count($cart) . ' items: ';
-            foreach ($cart as $productId => $item) {
-                $message .= 'Product ' . $productId . ' (Qty: ' . $item['quantity'] . '), ';
+        $cart = [];
+        if (auth()->check()) {
+            $cartItems = Cart::where('user_id', auth()->id())
+                ->with('product')
+                ->get();
+
+            foreach ($cartItems as $cartItem) {
+                $cart[$cartItem->product_id] = [
+                    'quantity' => $cartItem->quantity,
+                    'added_at' => $cartItem->created_at,
+                    'cart_item_id' => $cartItem->id
+                ];
             }
-            // Log instead of alert since alert() doesn't exist in PHP
-            \Log::info('Cart debug: ' . $message);
+        } else {
+            $cart = session()->get('cart', []);
         }
-        
+
         if (empty($cart)) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
         }
-        
+
         $addresses = [];
         $allAddresses = [];
         if (auth()->check()) {
             $allAddresses = auth()->user()->addresses()->orderBy('is_default', 'desc')->get();
             $addresses = $allAddresses->take(3);
         }
-        
+
         return view('website.checkout.index', compact('cart', 'addresses', 'allAddresses'));
     }
     
@@ -48,13 +54,6 @@ class CheckoutController extends Controller
             'payment_method' => strtoupper((string) $request->input('payment_method')),
         ]);
 
-        // Debug: Log incoming request data
-        \Log::info('Checkout process called', [
-            'request_data' => $request->all(),
-            'cart_contents' => session()->get('cart', []),
-            'user_id' => auth()->id()
-        ]);
-        
         // Only allow authenticated users with addresses to checkout
         if (!auth()->check()) {
             return redirect()->route('login')->with('error', 'Please login to proceed with checkout.');
@@ -71,7 +70,7 @@ class CheckoutController extends Controller
             'address' => 'nullable|string|max:500',
             'payment_method' => 'required|in:COD'
         ]);
-        
+
         // Custom validation to ensure either address_id or address is provided
         $validator->after(function ($validator) use ($request) {
             if (auth()->check()) {
@@ -86,23 +85,26 @@ class CheckoutController extends Controller
                 }
             }
         });
-        
+
         if ($validator->fails()) {
             \Log::error('Checkout validation failed', ['errors' => $validator->errors()->toArray()]);
             return back()->withErrors($validator)->withInput();
         }
-        
-        $cart = session()->get('cart', []);
-        
-        if (empty($cart)) {
+
+        // Get cart from database for authenticated users
+        $cartItems = Cart::where('user_id', auth()->id())
+            ->with('product')
+            ->get();
+
+        if ($cartItems->isEmpty()) {
             \Log::error('Cart is empty during checkout');
             return back()->with('error', 'Your cart is empty');
         }
-        
+
         // Get address
         $address = null;
         $customerAddress = '';
-        
+
         if ($request->address_id) {
             $address = Address::find($request->address_id);
             if (!$address || $address->user_id !== auth()->id()) {
@@ -112,35 +114,35 @@ class CheckoutController extends Controller
         } elseif ($request->address) {
             $customerAddress = $request->address;
         }
-        
+
         DB::beginTransaction();
-        
+
         try {
             // Validate stock availability
-            foreach ($cart as $productId => $item) {
-                $product = Product::find($productId);
+            foreach ($cartItems as $cartItem) {
+                $product = $cartItem->product;
                 if (!$product) {
                     return back()->with('error', 'One or more products in your cart are no longer available.');
                 }
-                if ($product->stock < $item['quantity']) {
-                    return back()->with('error', "Insufficient stock for {$product->name}. Available: {$product->stock}, Requested: {$item['quantity']}");
+                if ($product->stock < $cartItem->quantity) {
+                    return back()->with('error', "Insufficient stock for {$product->name}. Available: {$product->stock}, Requested: {$cartItem->quantity}");
                 }
             }
-            
+
             // Calculate total
             $subtotal = 0;
-            foreach ($cart as $productId => $item) {
-                $product = Product::find($productId);
+            foreach ($cartItems as $cartItem) {
+                $product = $cartItem->product;
                 if ($product) {
                     $price = $product->discount_price ?? $product->price;
-                    $subtotal += $price * $item['quantity'];
+                    $subtotal += $price * $cartItem->quantity;
                 }
             }
-            
+
             // Calculate shipping (free if subtotal > 500, otherwise ₹50)
             $shipping = $subtotal > 500 ? 0 : 50;
             $total = $subtotal + $shipping;
-            
+
             // Create order with address_id reference
             $order = Order::create([
                 'user_id' => auth()->id(),
@@ -157,38 +159,33 @@ class CheckoutController extends Controller
                 'order_status' => 'pending',
                 'payment_status' => 'pending',
             ]);
-            
+
             // Create order items and update stock
-            foreach ($cart as $productId => $item) {
-                $product = Product::find($productId);
+            foreach ($cartItems as $cartItem) {
+                $product = $cartItem->product;
                 if ($product) {
                     $price = $product->discount_price ?? $product->price;
                     OrderItem::create([
                         'order_id' => $order->id,
-                        'product_id' => $productId,
-                        'quantity' => $item['quantity'],
+                        'product_id' => $cartItem->product_id,
+                        'quantity' => $cartItem->quantity,
                         'price' => $price,
-                        'total' => $price * $item['quantity']
+                        'total' => $price * $cartItem->quantity
                     ]);
-                    
+
                     // Update product stock
-                    $product->decrement('stock', $item['quantity']);
+                    $product->decrement('stock', $cartItem->quantity);
                 }
             }
-            
+
             DB::commit();
-            
-            // Clear cart
-            session()->forget('cart');
 
-            if (auth()->check()) {
-                return redirect()->route('account.order-details', $order->id)
-                    ->with('success', 'Order placed successfully!');
-            }
+            // Clear cart from database
+            Cart::where('user_id', auth()->id())->delete();
 
-            return redirect()->route('home')
+            return redirect()->route('account.order-details', $order->id)
                 ->with('success', 'Order placed successfully!');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Checkout failed', [

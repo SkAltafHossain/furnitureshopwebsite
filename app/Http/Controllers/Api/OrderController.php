@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Address;
@@ -61,9 +62,6 @@ class OrderController extends Controller
         $validator = Validator::make($request->all(), [
             'address_id' => 'required|exists:addresses,id',
             'payment_method' => 'required|in:cod,online',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1|max:10',
         ]);
 
         if ($validator->fails()) {
@@ -78,33 +76,49 @@ class OrderController extends Controller
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
+        // Get cart items from database
+        $cartItems = Cart::where('user_id', auth()->id())
+            ->with('product')
+            ->get();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your cart is empty'
+            ], 400);
+        }
+
         DB::beginTransaction();
 
         try {
             $totalAmount = 0;
             $orderItems = [];
 
-            foreach ($request->items as $item) {
-                $product = Product::findOrFail($item['product_id']);
+            foreach ($cartItems as $cartItem) {
+                $product = $cartItem->product;
 
-                if ($product->stock < $item['quantity']) {
+                if (!$product) {
+                    throw new \Exception("Product not found");
+                }
+
+                if ($product->stock < $cartItem->quantity) {
                     throw new \Exception("Insufficient stock for {$product->name}");
                 }
 
                 $price = $product->discount_price ? $product->discount_price : $product->price;
-                $itemTotal = $price * $item['quantity'];
+                $itemTotal = $price * $cartItem->quantity;
                 $totalAmount += $itemTotal;
 
                 $orderItems[] = [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
-                    'quantity' => $item['quantity'],
+                    'quantity' => $cartItem->quantity,
                     'unit_price' => $price,
                     'total' => $itemTotal,
                 ];
 
                 // Update stock
-                $product->decrement('stock', $item['quantity']);
+                $product->decrement('stock', $cartItem->quantity);
             }
 
             $order = Order::create([
@@ -127,8 +141,8 @@ class OrderController extends Controller
                 $order->items()->create($item);
             }
 
-            // Clear cart
-            session(['cart' => []]);
+            // Clear cart from database
+            Cart::where('user_id', auth()->id())->delete();
 
             DB::commit();
 

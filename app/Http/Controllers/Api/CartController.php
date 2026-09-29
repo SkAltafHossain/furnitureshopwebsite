@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -14,30 +15,33 @@ class CartController extends Controller
      */
     public function index(Request $request)
     {
-        $cart = session('cart', []);
+        $cartItems = Cart::where('user_id', $request->user()->id)
+            ->with('product')
+            ->get();
 
-        $cartItems = [];
+        $items = [];
         $total = 0;
 
-        foreach ($cart as $productId => $quantity) {
-            $product = Product::find($productId);
-            if ($product) {
-                $cartItems[] = [
-                    'product_id' => $product->id,
-                    'product' => $product,
-                    'quantity' => $quantity,
-                    'subtotal' => $product->discount_price ? ($product->discount_price * $quantity) : ($product->price * $quantity)
-                ];
-                $total += $cartItems[count($cartItems) - 1]['subtotal'];
-            }
+        foreach ($cartItems as $cartItem) {
+            $price = $cartItem->product->discount_price ?? $cartItem->product->price;
+            $subtotal = $price * $cartItem->quantity;
+            $total += $subtotal;
+
+            $items[] = [
+                'id' => $cartItem->id,
+                'product_id' => $cartItem->product_id,
+                'product' => $cartItem->product,
+                'quantity' => $cartItem->quantity,
+                'subtotal' => $subtotal
+            ];
         }
 
         return response()->json([
             'success' => true,
             'data' => [
-                'items' => $cartItems,
+                'items' => $items,
                 'total' => $total,
-                'count' => count($cartItems)
+                'count' => count($items)
             ]
         ]);
     }
@@ -69,17 +73,24 @@ class CartController extends Controller
             ], 400);
         }
 
-        $cart = session('cart', []);
-        $cart[$request->product_id] = $request->quantity;
-        session(['cart' => $cart]);
+        $cartItem = Cart::updateOrCreate(
+            [
+                'user_id' => $request->user()->id,
+                'product_id' => $request->product_id
+            ],
+            [
+                'quantity' => $request->quantity
+            ]
+        );
 
-        $cartCount = count($cart);
+        $cartCount = Cart::where('user_id', $request->user()->id)->count();
 
         return response()->json([
             'success' => true,
             'message' => 'Item added to cart',
             'data' => [
-                'cart_count' => $cartCount
+                'cart_count' => $cartCount,
+                'cart_item' => $cartItem
             ]
         ]);
     }
@@ -101,7 +112,18 @@ class CartController extends Controller
             ], 422);
         }
 
-        $product = Product::findOrFail($id);
+        $cartItem = Cart::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item not found in cart'
+            ], 404);
+        }
+
+        $product = Product::findOrFail($cartItem->product_id);
 
         if ($product->stock < $request->quantity) {
             return response()->json([
@@ -110,17 +132,8 @@ class CartController extends Controller
             ], 400);
         }
 
-        $cart = session('cart', []);
-
-        if (!isset($cart[$id])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Item not found in cart'
-            ], 404);
-        }
-
-        $cart[$id] = $request->quantity;
-        session(['cart' => $cart]);
+        $cartItem->quantity = $request->quantity;
+        $cartItem->save();
 
         return response()->json([
             'success' => true,
@@ -131,25 +144,28 @@ class CartController extends Controller
     /**
      * Remove item from cart
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $cart = session('cart', []);
+        $cartItem = Cart::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->first();
 
-        if (!isset($cart[$id])) {
+        if (!$cartItem) {
             return response()->json([
                 'success' => false,
                 'message' => 'Item not found in cart'
             ], 404);
         }
 
-        unset($cart[$id]);
-        session(['cart' => $cart]);
+        $cartItem->delete();
+
+        $cartCount = Cart::where('user_id', $request->user()->id)->count();
 
         return response()->json([
             'success' => true,
             'message' => 'Item removed from cart',
             'data' => [
-                'cart_count' => count($cart)
+                'cart_count' => $cartCount
             ]
         ]);
     }
@@ -157,9 +173,9 @@ class CartController extends Controller
     /**
      * Clear cart
      */
-    public function clear()
+    public function clear(Request $request)
     {
-        session(['cart' => []]);
+        Cart::where('user_id', $request->user()->id)->delete();
 
         return response()->json([
             'success' => true,

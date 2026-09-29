@@ -217,15 +217,11 @@ curl -X POST http://your-domain.com/api/orders \
   -H "Content-Type: application/json" \
   -d '{
     "address_id": 1,
-    "payment_method": "cod",
-    "items": [
-      {
-        "product_id": 1,
-        "quantity": 2
-      }
-    ]
+    "payment_method": "cod"
   }'
 ```
+
+Note: The order will be created using items from the user's cart in the database.
 
 ## Pagination
 
