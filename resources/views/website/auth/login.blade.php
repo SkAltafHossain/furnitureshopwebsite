@@ -15,9 +15,9 @@
                         @csrf
                         
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email Address</label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                                   id="email" name="email" value="{{ old('email') }}" required autofocus>
+                            <label for="email" class="form-label">Email or Phone</label>
+                            <input type="text" class="form-control @error('email') is-invalid @enderror"
+                                   id="email" name="email" value="{{ old('email') }}" placeholder="Email or phone number" required autofocus>
                             @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -68,3 +68,32 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Allow login with either email or phone
+    $('form').submit(function(e) {
+        var emailOrPhone = $('#email').val().trim();
+        var password = $('#password').val();
+
+        if (!emailOrPhone) {
+            e.preventDefault();
+            showToast('Please enter your email or phone number', 'error');
+            return false;
+        }
+
+        if (!password) {
+            e.preventDefault();
+            showToast('Please enter your password', 'error');
+            return false;
+        }
+
+        // If it looks like a phone number, change the input name to phone
+        if (/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(emailOrPhone)) {
+            $('#email').attr('name', 'phone');
+        }
+    });
+});
+</script>
+@endpush

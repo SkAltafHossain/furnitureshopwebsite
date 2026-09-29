@@ -41,7 +41,7 @@ Authorization: Bearer {token}
 
 ### User Profile
 - `GET /api/user` - Get user profile
-- `PUT /api/user` - Update user profile
+- `PUT /api/user` - Update user profile (both email and phone are required, both must be unique)
 - `PUT /api/user/password` - Update user password
 - `POST /api/logout` - Logout user
 
@@ -130,6 +130,8 @@ curl -X POST http://your-domain.com/api/register \
   }'
 ```
 
+Note: Both `email` and `phone` are required. Both must be unique across all users.
+
 ### Login
 ```bash
 curl -X POST http://your-domain.com/api/login \
@@ -139,6 +141,18 @@ curl -X POST http://your-domain.com/api/login \
     "password": "password123"
   }'
 ```
+
+Or login with phone (use the same `email` field):
+```bash
+curl -X POST http://your-domain.com/api/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "+1234567890",
+    "password": "password123"
+  }'
+```
+
+Note: Use the `email` field for both email and phone. The system automatically detects whether you're using an email or phone number.
 
 ### Get Products
 ```bash

@@ -291,14 +291,14 @@
                                 <form method="POST" action="{{ route('login') }}" id="modalLoginForm">
                                     @csrf
                                     <div class="mb-3">
-                                        <label for="email" class="form-label fw-semibold">Email Address</label>
+                                        <label for="email" class="form-label fw-semibold">Email or Phone</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light border-0">
                                                 <i class="fas fa-envelope text-primary"></i>
                                             </span>
-                                            <input type="email" class="form-control border-start-0" 
-                                                   id="email" name="email" value="{{ old('email') }}" 
-                                                   placeholder="Enter your email" required autofocus>
+                                            <input type="text" class="form-control border-start-0"
+                                                   id="email" name="email" value="{{ old('email') }}"
+                                                   placeholder="Email or phone number" required autofocus>
                                         </div>
                                         @error('email')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -416,9 +416,9 @@
                                             <span class="input-group-text bg-light border-0">
                                                 <i class="fas fa-phone text-primary"></i>
                                             </span>
-                                            <input type="tel" class="form-control border-start-0" 
-                                                   id="phone" name="phone" value="{{ old('phone') }}" 
-                                                   placeholder="+1234567890">
+                                            <input type="tel" class="form-control border-start-0"
+                                                   id="phone" name="phone" value="{{ old('phone') }}"
+                                                   placeholder="+1234567890" required>
                                         </div>
                                         @error('phone')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -622,13 +622,38 @@
             $(this).find('.is-invalid').removeClass('is-invalid');
             $(this).find('.alert').remove();
         });
-        
-                
+
+        // Handle login form submission - support email or phone
+        $('#modalLoginForm').on('submit', function(e) {
+            var emailOrPhone = $('#email').val().trim();
+            var password = $('#password').val();
+
+            if (!emailOrPhone) {
+                e.preventDefault();
+                showValidationErrors('Please enter your email or phone number');
+                return false;
+            }
+
+            if (!password) {
+                e.preventDefault();
+                showValidationErrors('Please enter your password');
+                return false;
+            }
+
+            // If it looks like a phone number, change the input name to phone
+            if (/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(emailOrPhone)) {
+                $('#email').attr('name', 'phone');
+            } else {
+                $('#email').attr('name', 'email');
+            }
+        });
+
+
         // Show validation errors in a more elegant way
         function showValidationErrors(errors) {
             var errorHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">';
             errorHtml += '<i class="fas fa-exclamation-triangle me-2"></i><strong>Error:</strong><br>';
-            
+
             if (typeof errors === 'string') {
                 errorHtml += errors;
             } else if (Array.isArray(errors)) {
@@ -642,13 +667,13 @@
                     }
                 });
             }
-            
+
             errorHtml += '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
             errorHtml += '</div>';
-            
+
             // Insert at the top of the modal body
             $('.modal-body').prepend(errorHtml);
-            
+
             // Auto-remove after 5 seconds
             setTimeout(function() {
                 $('.alert').fadeOut(500, function() {

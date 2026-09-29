@@ -21,8 +21,11 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'required|string|max:20|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:20',
+        ], [
+            'email.unique' => 'The email has already been taken.',
+            'phone.unique' => 'The phone number has already been taken.',
         ]);
 
         if ($validator->fails()) {
@@ -60,7 +63,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
+            'email' => 'required|string',
             'password' => 'required|string',
         ]);
 
@@ -72,7 +75,11 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('email', $request->email)->first();
+        // Determine if login is with email or phone
+        $loginField = filter_var($request->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+        $loginValue = $request->email;
+
+        $user = User::where($loginField, $loginValue)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
