@@ -112,11 +112,16 @@ class UserController extends Controller
     public function storeAddress(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'address' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'type' => 'sometimes|in:home,office,other',
+            'address_line1' => 'required|string|max:255',
+            'address_line2' => 'nullable|string|max:255',
             'city' => 'required|string|max:100',
             'state' => 'required|string|max:100',
             'postal_code' => 'required|string|max:20',
-            'is_default' => 'boolean',
+            'country' => 'sometimes|string|max:100',
+            'is_default' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -129,9 +134,10 @@ class UserController extends Controller
 
         $user = $request->user();
 
-        // If setting as default, remove default from other addresses
-        if ($request->is_default) {
+        // Automatically set as default unless explicitly set to false
+        if ($request->is_default !== false) {
             $user->addresses()->update(['is_default' => false]);
+            $request->merge(['is_default' => true]);
         }
 
         $address = $user->addresses()->create($request->all());
@@ -149,11 +155,16 @@ class UserController extends Controller
     public function updateAddress(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
-            'state' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:20',
-            'is_default' => 'boolean',
+            'name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'type' => 'sometimes|in:home,office,other',
+            'address_line1' => 'sometimes|required|string|max:255',
+            'address_line2' => 'nullable|string|max:255',
+            'city' => 'sometimes|required|string|max:100',
+            'state' => 'sometimes|required|string|max:100',
+            'postal_code' => 'sometimes|required|string|max:20',
+            'country' => 'sometimes|string|max:100',
+            'is_default' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -186,14 +197,6 @@ class UserController extends Controller
     public function deleteAddress(Request $request, $id)
     {
         $address = $request->user()->addresses()->findOrFail($id);
-
-        // Prevent deletion if it's the only address
-        if ($request->user()->addresses()->count() === 1) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You cannot delete your only address'
-            ], 400);
-        }
 
         $address->delete();
 
