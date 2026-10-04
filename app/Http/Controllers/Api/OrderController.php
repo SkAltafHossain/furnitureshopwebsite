@@ -62,8 +62,8 @@ class OrderController extends Controller
         $validator = Validator::make($request->all(), [
             'address_id' => 'required|exists:addresses,id',
             'payment_method' => 'required|in:cod,online',
-            'is_buy_now' => 'nullable|boolean',
-            'items' => 'nullable|array', // For buy-now checkout
+            'is_buy_now' => 'required|boolean',
+            'items' => 'required_if:is_buy_now,true|array',
             'items.*.product_id' => 'required_with:items|exists:products,id',
             'items.*.quantity' => 'required_with:items|integer|min:1|max:10',
         ]);
@@ -83,7 +83,7 @@ class OrderController extends Controller
         $isBuyNow = $request->input('is_buy_now', false);
         $checkoutItems = collect();
 
-        if ($isBuyNow && $request->has('items')) {
+        if ($isBuyNow) {
             // Buy Now checkout - use provided items
             foreach ($request->items as $item) {
                 $product = Product::with('category')->findOrFail($item['product_id']);
@@ -131,9 +131,8 @@ class OrderController extends Controller
 
                 $orderItems[] = [
                     'product_id' => $product->id,
-                    'product_name' => $product->name,
                     'quantity' => $checkoutItem->quantity,
-                    'unit_price' => $price,
+                    'price' => $price,
                     'total' => $itemTotal,
                 ];
 
@@ -150,10 +149,7 @@ class OrderController extends Controller
                 'customer_name' => auth()->user()->name,
                 'customer_email' => auth()->user()->email,
                 'customer_phone' => auth()->user()->phone,
-                'customer_address' => $address->address,
-                'city' => $address->city,
-                'state' => $address->state,
-                'postal_code' => $address->postal_code,
+                'customer_address' => $address->full_address,
                 'address_id' => $address->id,
             ]);
 
