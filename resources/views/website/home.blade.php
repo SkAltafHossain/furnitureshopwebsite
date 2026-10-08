@@ -6,6 +6,27 @@
     $shopSettings = \App\Models\ShopSetting::getSettings();
 @endphp
 
+@push('styles')
+<style>
+.category-grid .col-lg-2-4 {
+    flex: 0 0 20%;
+    max-width: 20%;
+}
+@media (max-width: 991.98px) {
+    .category-grid .col-md-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
+}
+@media (max-width: 767.98px) {
+    .category-grid .col-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+</style>
+@endpush
+
 @section('content')
 <!-- Hero Banner Slider -->
 <section class="hero-slider">
@@ -51,9 +72,9 @@
             <h2 class="h3">Shop by Category</h2>
             <p class="text-muted">Browse our wide range of products</p>
         </div>
-        <div class="row">
+        <div class="row category-grid">
             @forelse($categories as $category)
-                <div class="col-md-4 col-lg-2 mb-4">
+                <div class="col-6 col-md-4 col-lg-2-4 mb-4">
                     <a href="{{ route('category.show', $category->slug) }}" class="text-decoration-none">
                         <div class="card h-100 text-center category-card">
                             <div class="card-body">
