@@ -88,7 +88,7 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     @php
-                                        $categories = \App\Models\Category::where('status', 'active')->take(6)->get();
+                                        $categories = \App\Models\Category::where('status', 'active')->get();
                                     @endphp
                                     @foreach($categories as $category)
                                         <li><a class="dropdown-item" href="{{ route('category.show', $category->slug) }}">{{ $category->name }}</a></li>
@@ -207,7 +207,7 @@
                 </a>
                 <div class="dropdown-menu" style="display: none;">
                     @php
-                        $categories = \App\Models\Category::where('status', 'active')->take(6)->get();
+                        $categories = \App\Models\Category::where('status', 'active')->get();
                     @endphp
                     @foreach($categories as $category)
                         <a href="{{ route('category.show', $category->slug) }}" class="dropdown-item">{{ $category->name }}</a>

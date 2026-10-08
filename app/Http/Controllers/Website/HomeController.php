@@ -14,7 +14,7 @@ class HomeController extends Controller
     public function index()
     {
         $banners = Banner::where('status', 'active')->latest()->get();
-        $categories = Category::where('status', 'active')->take(6)->get();
+        $categories = Category::where('status', 'active')->get();
         $latestProducts = Product::where('status', 'active')->latest()->take(8)->get();
         $featuredProducts = Product::where('status', 'active')->where('featured', 1)->take(8)->get();
         
