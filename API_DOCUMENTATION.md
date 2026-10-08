@@ -66,6 +66,7 @@ Authorization: Bearer {token}
 - `POST /api/orders` - Create new order
 - `PUT /api/orders/{id}/cancel` - Cancel order
 - `PUT /api/orders/{id}/confirm-delivery` - Confirm order delivery
+- `GET /api/orders/{id}/download` - Download order bill as PDF
 
 ### Wishlist
 - `GET /api/wishlist` - Get wishlist items
@@ -271,6 +272,15 @@ curl -X POST http://your-domain.com/api/orders \
 ```
 
 Note: When `is_buy_now` is true, the order will be created using the provided `items` array instead of the cart. The cart will not be cleared after order creation.
+
+### Download Order Bill (Authenticated)
+```bash
+curl -X GET http://your-domain.com/api/orders/1/download \
+  -H "Authorization: Bearer {your_token}" \
+  -o order-bill.pdf
+```
+
+This endpoint returns a PDF file of the order bill/invoice.
 
 ## Pagination
 

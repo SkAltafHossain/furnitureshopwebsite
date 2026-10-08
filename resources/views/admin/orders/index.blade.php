@@ -98,7 +98,6 @@ $(document).ready(function() {
     // Initialize DataTable
     var table = $('#ordersTable').DataTable({
         processing: true,
-        serverSide: true,
         ajax: '{{ route("admin.orders.data") }}',
         columns: [
             { data: 'order_id', name: 'order_id' },

@@ -25,17 +25,12 @@ class UserController extends Controller
     }
 
     /**
-     * Update user profile
+     * Update user profile (name only)
      */
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . auth()->id(),
-            'phone' => 'required|string|max:20|unique:users,phone,' . auth()->id(),
-        ], [
-            'email.unique' => 'The email has already been taken.',
-            'phone.unique' => 'The phone number has already been taken.',
         ]);
 
         if ($validator->fails()) {
@@ -47,7 +42,7 @@ class UserController extends Controller
         }
 
         $user = $request->user();
-        $user->update($request->only(['name', 'email', 'phone']));
+        $user->update(['name' => $request->name]);
 
         return response()->json([
             'success' => true,
@@ -223,6 +218,123 @@ class UserController extends Controller
             'success' => true,
             'message' => 'Default address updated successfully',
             'data' => $address
+        ]);
+    }
+
+    /**
+     * Update user email
+     */
+    public function updateEmail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email|max:255|unique:users,email,' . auth()->id(),
+            'password' => 'required|string',
+        ], [
+            'email.unique' => 'The email has already been taken.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        // Verify current password
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Current password is incorrect'
+            ], 400);
+        }
+
+        $user->update(['email' => $request->email]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Email updated successfully',
+            'data' => $user
+        ]);
+    }
+
+    /**
+     * Update user phone
+     */
+    public function updatePhone(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|string|max:20|unique:users,phone,' . auth()->id(),
+            'password' => 'required|string',
+        ], [
+            'phone.unique' => 'The phone number has already been taken.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        // Verify current password
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Current password is incorrect'
+            ], 400);
+        }
+
+        $user->update(['phone' => $request->phone]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Phone updated successfully',
+            'data' => $user
+        ]);
+    }
+
+    /**
+     * Delete user account
+     */
+    public function destroy(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        // Verify current password
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Current password is incorrect'
+            ], 400);
+        }
+
+        // Revoke all tokens
+        $user->tokens()->delete();
+
+        // Delete user
+        $user->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Account deleted successfully'
         ]);
     }
 }

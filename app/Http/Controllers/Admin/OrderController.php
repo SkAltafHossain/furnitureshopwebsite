@@ -16,8 +16,12 @@ class OrderController extends Controller
     public function getData()
     {
         $orders = Order::latest()->get();
-        
+        $total = $orders->count();
+
         return response()->json([
+            'draw' => request()->get('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
             'data' => $orders->map(function ($order) {
                 return [
                     'id' => $order->id,

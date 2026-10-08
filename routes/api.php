@@ -52,6 +52,9 @@ Route::middleware('api')->group(function () {
         Route::get('/user', [UserController::class, 'profile']);
         Route::put('/user', [UserController::class, 'update']);
         Route::put('/user/password', [UserController::class, 'updatePassword']);
+        Route::put('/user/email', [UserController::class, 'updateEmail']);
+        Route::put('/user/phone', [UserController::class, 'updatePhone']);
+        Route::delete('/user', [UserController::class, 'destroy']);
         Route::post('/logout', [AuthController::class, 'logout']);
 
         // Cart
@@ -68,6 +71,7 @@ Route::middleware('api')->group(function () {
         Route::post('/orders', [OrderController::class, 'store']);
         Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
         Route::put('/orders/{id}/confirm-delivery', [OrderController::class, 'confirmDelivery']);
+        Route::get('/orders/{id}/download', [OrderController::class, 'downloadBill']);
 
         // Wishlist
         Route::get('/wishlist', [WishlistController::class, 'index']);

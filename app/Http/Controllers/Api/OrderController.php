@@ -8,9 +8,11 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Address;
 use App\Models\Product;
+use App\Models\ShopSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class OrderController extends Controller
 {
@@ -232,5 +234,28 @@ class OrderController extends Controller
             'success' => false,
             'message' => 'Order cannot be confirmed. It must be delivered and within 24 hours of delivery.'
         ], 422);
+    }
+
+    /**
+     * Download order bill as PDF
+     */
+    public function downloadBill($id)
+    {
+        $order = Order::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->with(['items.product', 'address'])
+            ->firstOrFail();
+
+        $shopSettings = ShopSetting::getSettings();
+
+        $pdf = Pdf::loadView('website.orders.pdf', [
+            'order' => $order,
+            'shop_name' => $shopSettings->shop_name,
+            'shop_address' => $shopSettings->shop_address,
+            'shop_phone' => $shopSettings->shop_phone,
+            'shop_email' => $shopSettings->shop_email,
+        ]);
+
+        return $pdf->download('order-' . $order->order_id . '.pdf');
     }
 }
