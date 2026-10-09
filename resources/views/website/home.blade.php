@@ -107,8 +107,8 @@
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
             @forelse($latestProducts as $product)
                 <div class="col mb-4">
-                    <x-product-card 
-                        :product="$product" 
+                    <x-product-card
+                        :product="$product"
                         :showCategory="true"
                         :wishlistActive="in_array($product->id, $wishlistProductIds ?? [])"
                     />
@@ -119,34 +119,33 @@
                 </div>
             @endforelse
         </div>
-        <div class="text-center mt-4">
-            <a href="{{ route('products.index') }}" class="btn btn-primary">View All Products</a>
-        </div>
     </div>
 </section>
 
-<!-- Featured Products -->
-@if($featuredProducts->count() > 0)
+<!-- All Products -->
 <section class="py-5">
     <div class="container-fluid">
         <div class="text-center mb-4">
-            <h2 class="h3">Featured Products</h2>
-            <p class="text-muted">Handpicked products just for you</p>
+            <h2 class="h3">All Products</h2>
+            <p class="text-muted">Browse our complete collection</p>
         </div>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
-            @foreach($featuredProducts as $product)
+            @forelse($allProducts as $product)
                 <div class="col mb-4">
-                    <x-product-card 
-                        :product="$product" 
+                    <x-product-card
+                        :product="$product"
                         :showCategory="true"
                         :wishlistActive="in_array($product->id, $wishlistProductIds ?? [])"
                     />
                 </div>
-            @endforeach
+            @empty
+                <div class="col-12 text-center">
+                    <p class="text-muted">No products available at the moment.</p>
+                </div>
+            @endforelse
         </div>
     </div>
 </section>
-@endif
 @endsection
 
 @push('scripts')
