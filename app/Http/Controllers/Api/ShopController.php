@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\ShopSetting;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Banner;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\CategoryResource;
+use App\Http\Resources\BannerResource;
 use Illuminate\Http\Request;
 
 class ShopController extends Controller
@@ -35,6 +37,11 @@ class ShopController extends Controller
      */
     public function home()
     {
+        // Get active banners
+        $banners = Banner::where('status', 'active')
+            ->orderBy('id', 'desc')
+            ->get();
+
         // Get 5 products (first 5 by ID)
         $products = Product::with('category')
             ->where('status', 'active')
@@ -66,6 +73,7 @@ class ShopController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
+                'banners' => BannerResource::collection($banners),
                 'products' => ProductResource::collection($products),
                 'categories' => CategoryResource::collection($categories),
                 'latest_products' => ProductResource::collection($latestProducts),
