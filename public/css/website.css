@@ -538,46 +538,31 @@ body {
 }
 
 .hero-slider .carousel {
-    height: 500px;
-    height: 60vh;
     min-height: 300px;
-    max-height: 600px;
 }
 
 .hero-slider .carousel-inner {
-    height: 500px;
-    height: 60vh;
     min-height: 300px;
-    max-height: 600px;
 }
 
 .hero-slider .carousel-item {
-    height: 500px;
-    height: 60vh;
     min-height: 300px;
-    max-height: 600px;
 }
 
 .hero-slider .carousel-item img {
-    height: 500px;
-    height: 60vh;
-    min-height: 300px;
-    max-height: 600px;
     width: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
 }
 
 /* Mobile carousel adjustments */
 @media (max-width: 768px) {
     .hero-slider .carousel,
     .hero-slider .carousel-inner,
-    .hero-slider .carousel-item,
-    .hero-slider .carousel-item img {
-        height: 50vh;
+    .hero-slider .carousel-item {
         min-height: 250px;
-        max-height: 400px;
     }
-    
+
     .hero-slider .carousel-caption {
         position: absolute;
         bottom: 10px !important;
@@ -588,17 +573,17 @@ body {
         padding: 1rem;
         background: linear-gradient(transparent, rgba(0,0,0,0.7));
     }
-    
+
     .hero-slider .carousel-caption h2 {
         font-size: 1.2rem !important;
         margin-bottom: 0.5rem;
     }
-    
+
     .hero-slider .carousel-caption p {
         font-size: 0.9rem !important;
         margin-bottom: 1rem;
     }
-    
+
     .hero-slider .carousel-caption .btn {
         padding: 0.5rem 1rem;
         font-size: 0.85rem;
@@ -608,11 +593,8 @@ body {
 @media (max-width: 480px) {
     .hero-slider .carousel,
     .hero-slider .carousel-inner,
-    .hero-slider .carousel-item,
-    .hero-slider .carousel-item img {
-        height: 40vh;
+    .hero-slider .carousel-item {
         min-height: 200px;
-        max-height: 350px;
     }
 }
 
